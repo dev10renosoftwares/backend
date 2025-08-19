@@ -1,19 +1,31 @@
+using Intern.Common.Helpers;
 using Intern.Data;
+using Intern.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Register DbContext with connection string from config
 builder.Services.AddDbContext<ApiDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DBCS")));
+
+builder.Services.AddScoped<EncryptionHelper>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var key = config["EncryptionSettings:Key"];
+    return new EncryptionHelper(key);
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+//builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+builder.Services.AddHttpContextAccessor();
+// 4. Register Services + Repositories
+builder.Services.RegisterServices(builder.Configuration);
 
 var app = builder.Build();
-
-// Create DB if it doesn't exist
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
