@@ -41,14 +41,14 @@ namespace Intern.Services
        
         public async Task<string> SignUpAsync(SignUpSM signUpSM)
         {
-            // 1️⃣ Check if email exists
+          
             var existingUser = await _Context.ClientUsers
                 .FirstOrDefaultAsync(u => u.Email.ToLower() == signUpSM.Email.ToLower());
 
             if (existingUser != null)
                 throw new AppException("Email already exists", HttpStatusCode.Conflict);
 
-            // 2️⃣ Map DTO to entity
+          
             var user = _mapper.Map<ClientUserDM>(signUpSM);
             user.Password = _passwordHelper.HashPassword(signUpSM.Password);
             user.LoginId = signUpSM.Email;
@@ -84,7 +84,7 @@ namespace Intern.Services
                 ExpiresAt = DateTime.UtcNow.AddHours(1) 
             };
 
-            // Encrypt the payload
+       
              var encryptedToken = _encryptionHelper.Encrypt(emailVerification);
 
             // Build link
@@ -113,7 +113,7 @@ namespace Intern.Services
                 if (DateTime.UtcNow > expiresAt)
                     throw new AppException("Token expired", HttpStatusCode.Conflict);
 
-                // 3. Find user
+               
                 var user = await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == tokenEmail);
                 if (user == null)
                     throw new AppException("User Not Found", HttpStatusCode.NotFound);
@@ -177,7 +177,7 @@ namespace Intern.Services
                 userSM.ImagePath = null;
 
             // 4. Generate JWT
-            userSM.Role = loginSM.Role; // ensure role is set
+            userSM.Role = loginSM.Role; 
             var token = JWTToken.GenerateJWTToken(_configuration, userSM);
 
             // 5. Map to LoginResponseSM
@@ -201,14 +201,14 @@ namespace Intern.Services
                     throw new AppException("Google did not return an email", HttpStatusCode.Conflict);
 
                 bool isNewUser = false;
-                // 2. Check in ClientUser (ClientUsers table)
+             
                 var clientUser = await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == email);
 
                 if (clientUser == null)
                 {
                     isNewUser = true;
 
-                    // User not found → create new client user
+                    
                     clientUser = new ClientUserDM
                     {
                       
@@ -216,7 +216,7 @@ namespace Intern.Services
                         Email = email,
                         LoginId = email,
                         Role = UserRoleDM.ClientEmployee,
-                        IsEmailConfirmed = true,  // default true for Google signup
+                        IsEmailConfirmed = true,  
                         Password = null,
                         CreatedOnUtc = DateTime.UtcNow,
                         IsActive = true
@@ -242,7 +242,12 @@ namespace Intern.Services
                 {
                     // User exists → check email confirmation
                     if (!clientUser.IsEmailConfirmed)
-                        throw new AppException("Email not confirmed. Please verify your account.", HttpStatusCode.Forbidden);
+                    {
+                        clientUser.IsEmailConfirmed= true;
+                        _Context.ClientUsers.Update(clientUser);
+                        await _Context.SaveChangesAsync();
+                    }
+                        
                 }
 
                 // 3. Ensure exists in ExternalUsers
@@ -275,7 +280,7 @@ namespace Intern.Services
                         externalUser.RefreshToken = googleSM.RefreshToken;
                         externalUser.LastModifiedOnUtc = DateTime.UtcNow;                        
                     }
-                 // Update refresh token or other fields if needed
+                
                     try
                     {
 
@@ -291,7 +296,6 @@ namespace Intern.Services
                 // 4. Map ClientUserDM → UserSM for JWT
                 var userSM = _mapper.Map<UserSM>(clientUser);
 
-                // 5. Generate JWT token
                 var token = JWTToken.GenerateJWTToken(_configuration, userSM);
 
                 // 6. Map ClientUserDM → LoginResponseSM using AutoMapper
@@ -299,7 +303,7 @@ namespace Intern.Services
                 response.Token = new JwtSecurityTokenHandler().WriteToken(token);
                 response.Expiration = token.ValidTo;
 
-                // 7. Handle image in response
+            
                 if (!string.IsNullOrEmpty(clientUser.ImagePath) && File.Exists(clientUser.ImagePath))
                 {
                     response.ImagePath = _imageHelper.ConvertFileToBase64(clientUser.ImagePath);

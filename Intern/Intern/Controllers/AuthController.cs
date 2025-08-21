@@ -112,12 +112,12 @@ namespace Intern.Controllers
         {
             try
             {
-                // Call the service and get both the response and the isNewUser flag
+               
                 var (response, isNewUser) = await _authservices.ProcessGoogleIdTokenAsync(googleSM);
 
                 if (isNewUser)
                 {
-                    // Only show message for new user
+                    
                     return new ApiResponse<LoginResponseSM>
                     {
                         Success = true,
@@ -127,7 +127,6 @@ namespace Intern.Controllers
                 }
                 else
                 {
-                    // Existing user → return data and message
                     return new ApiResponse<LoginResponseSM>
                     {
                         Success = true,
