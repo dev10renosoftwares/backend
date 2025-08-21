@@ -24,9 +24,11 @@ namespace Intern.DataModels.User
 
         [Phone(ErrorMessage = "Invalid mobile number")]
         [MaxLength(15, ErrorMessage = "Mobile number cannot exceed 15 digits")]
-        public string? MobileNumber { get; set; }      
+        public string? MobileNumber { get; set; }
 
-              
+        public string? ImagePath { get; set; }
+
+
 
 
     }

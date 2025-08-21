@@ -69,6 +69,104 @@ namespace Intern.Controllers
         }
 
 
+       
+      
+        [HttpPost("login")]
+        public async Task<ApiResponse<LoginResponseSM>> Login([FromBody] LoginSM loginSM)
+        
+        {
+            try
+            {
+        
+                var result = await _authservices.LoginAsync(loginSM);
+
+                return new ApiResponse<LoginResponseSM>
+                {
+                    Success = true,
+                    Message = "Login successfully",
+                    Data = result
+                };
+            }
+            catch (AppException ex)
+            {
+                return new ApiResponse<LoginResponseSM>
+                {
+                    Success = false,
+                    Message = "Login failed",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<LoginResponseSM>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+        [HttpPost("googlesignup")]
+        [HttpPost("googlelogin")]
+        public async Task<ApiResponse<LoginResponseSM>> GoogleLogin([FromBody] GoogleSM googleSM)
+        {
+            try
+            {
+                // Call the service and get both the response and the isNewUser flag
+                var (response, isNewUser) = await _authservices.ProcessGoogleIdTokenAsync(googleSM);
+
+                if (isNewUser)
+                {
+                    // Only show message for new user
+                    return new ApiResponse<LoginResponseSM>
+                    {
+                        Success = true,
+                        Message = "User registered successfully via Google",
+                        Data = null
+                    };
+                }
+                else
+                {
+                    // Existing user → return data and message
+                    return new ApiResponse<LoginResponseSM>
+                    {
+                        Success = true,
+                        Message = "Login successful",
+                        Data = response
+                    };
+                }
+            }
+            catch (AppException ex)
+            {
+                return new ApiResponse<LoginResponseSM>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<LoginResponseSM>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
 
     }
+
 }
+
+
+
+
+
+
+
+
+
+

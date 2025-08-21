@@ -10,8 +10,8 @@ namespace Intern.ServiceModels
 
         [Compare("Password", ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; }
-        public string PhoneNumber { get; set; }
-        //public UserRoleDM Role { get; set; }
+        public string MobileNumber { get; set; }
+        
         public string?  ImagePath { get; set; }
     }
 }

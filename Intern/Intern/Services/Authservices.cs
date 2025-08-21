@@ -1,12 +1,18 @@
-﻿using System.Net;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using AutoMapper;
 using Common.Helpers;
+using Google.Apis.Auth;
 using Intern.Common.Helpers;
 using Intern.Data;
+using Intern.DataModels.Enums;
 using Intern.DataModels.User;
 using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Intern.Services
 {
@@ -18,8 +24,10 @@ namespace Intern.Services
         private readonly ImageHelper _imageHelper;
         private readonly EmailService _emailService;
         private readonly EncryptionHelper _encryptionHelper;
+        private readonly IConfiguration _configuration;
+        JWTToken JWTToken = new JWTToken();
 
-        public Authservices(ApiDbContext dbContext,IMapper mapper,PasswordHelper passwordHelper,ImageHelper imageHelper,EmailService emailService,EncryptionHelper encryptionHelper)
+        public Authservices(ApiDbContext dbContext,IMapper mapper,PasswordHelper passwordHelper,ImageHelper imageHelper,EmailService emailService,EncryptionHelper encryptionHelper,IConfiguration configuration )
         {
             _Context = dbContext;
             _mapper = mapper;
@@ -27,6 +35,7 @@ namespace Intern.Services
             _imageHelper = imageHelper;
             _emailService = emailService;
             _encryptionHelper = encryptionHelper;
+            _configuration = configuration;
         }
 
        
@@ -122,8 +131,203 @@ namespace Intern.Services
                 
                 throw;
             }
+
+            
+        }
+
+        public async Task<LoginResponseSM> LoginAsync(LoginSM loginSM)
+        {
+            // 1. Validate role
+            if (!Enum.IsDefined(typeof(UserRoleDM), loginSM.Role))
+                throw new AppException("Invalid role specified", HttpStatusCode.BadRequest);
+
+            object user = loginSM.Role switch
+            {
+                UserRoleDM.SuperAdmin or UserRoleDM.SystemAdmin =>
+                    await _Context.ApplicationUsers.FirstOrDefaultAsync(u => u.Email == loginSM.Email),
+
+                UserRoleDM.ClientEmployee =>
+                    await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == loginSM.Email),
+
+                _ => throw new AppException("Unsupported role for login", HttpStatusCode.BadRequest)
+            };
+
+            if (user == null)
+                throw new AppException("User not found. Invalid Email", HttpStatusCode.NotFound);
+
+            if (user is ClientUserDM clientUser && !clientUser.IsEmailConfirmed)
+                throw new AppException("Please verify your email before logging in.", HttpStatusCode.Forbidden);
+
+
+            // 2. Map to UserSM for password + image handling
+            var userSM = _mapper.Map<UserSM>(user);
+
+            // Password checks
+            if (string.IsNullOrEmpty(userSM.Password))
+                throw new AppException("This account is registered via Google. Please log in using Google login.", HttpStatusCode.BadRequest);
+
+            var isValidPassword = _passwordHelper.VerifyPassword(loginSM.Password, userSM.Password);
+            if (!isValidPassword)
+                throw new AppException("Incorrect Password", HttpStatusCode.Unauthorized);
+
+            // 3. Handle image BEFORE mapping to response
+            if (!string.IsNullOrEmpty(userSM.ImagePath) && File.Exists(userSM.ImagePath))
+                userSM.ImagePath = _imageHelper.ConvertFileToBase64(userSM.ImagePath);
+            else
+                userSM.ImagePath = null;
+
+            // 4. Generate JWT
+            userSM.Role = loginSM.Role; // ensure role is set
+            var token = JWTToken.GenerateJWTToken(_configuration, userSM);
+
+            // 5. Map to LoginResponseSM
+            var responseSM = _mapper.Map<LoginResponseSM>(userSM);
+            responseSM.Token = new JwtSecurityTokenHandler().WriteToken(token);
+            responseSM.Expiration = token.ValidTo;
+
+            return responseSM;
+        }
+
+        public async Task<(LoginResponseSM Response, bool IsNewUser)> ProcessGoogleIdTokenAsync(GoogleSM googleSM)
+        
+        {
+            try
+            {
+                // 1. Validate token from Google
+                var payload = await GoogleJsonWebSignature.ValidateAsync(googleSM.IdToken);
+                var email = payload.Email;
+
+                if (string.IsNullOrEmpty(email))
+                    throw new AppException("Google did not return an email", HttpStatusCode.Conflict);
+
+                bool isNewUser = false;
+                // 2. Check in ClientUser (ClientUsers table)
+                var clientUser = await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == email);
+
+                if (clientUser == null)
+                {
+                    isNewUser = true;
+
+                    // User not found → create new client user
+                    clientUser = new ClientUserDM
+                    {
+                      
+
+                        Email = email,
+                        LoginId = email,
+                        Role = UserRoleDM.ClientEmployee,
+                        IsEmailConfirmed = true,  // default true for Google signup
+                        Password = null,
+                        CreatedOnUtc = DateTime.UtcNow,
+                        IsActive = true
+                    };
+
+                    if (!string.IsNullOrEmpty(payload.Picture))
+                    {
+                        string path = Path.Combine(Directory.GetCurrentDirectory(), @"Images");
+                        clientUser.ImagePath = await _imageHelper.SaveImageFromUrlAsync(payload.Picture, path);
+                    }
+
+                    try
+                    {
+                        _Context.ClientUsers.Add(clientUser);
+                        await _Context.SaveChangesAsync();
+                    }
+                    catch
+                    {
+                        throw new AppException("Database error while saving client user", HttpStatusCode.Conflict);
+                    }
+                }
+                else
+                {
+                    // User exists → check email confirmation
+                    if (!clientUser.IsEmailConfirmed)
+                        throw new AppException("Email not confirmed. Please verify your account.", HttpStatusCode.Forbidden);
+                }
+
+                // 3. Ensure exists in ExternalUsers
+                var externalUser = await _Context.ExternalUsers.FirstOrDefaultAsync(eu => eu.UserId == clientUser.Id);
+
+                if (externalUser == null)
+                {
+                    externalUser = new ExternalUserDM
+                    {
+                        UserId = clientUser.Id,
+                        RefreshToken = googleSM.RefreshToken,
+                        LoginType = LoginTypeDM.Google,
+                        CreatedOnUtc = DateTime.UtcNow,
+                    };
+
+                    try
+                    {
+                        _Context.ExternalUsers.Add(externalUser);
+                        await _Context.SaveChangesAsync();
+                    }
+                    catch
+                    {
+                        throw new AppException("Database error while saving external user", HttpStatusCode.Conflict);
+                    }
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(googleSM.RefreshToken))
+                    {
+                        externalUser.RefreshToken = googleSM.RefreshToken;
+                        externalUser.LastModifiedOnUtc = DateTime.UtcNow;                        
+                    }
+                 // Update refresh token or other fields if needed
+                    try
+                    {
+
+                        _Context.ExternalUsers.Update(externalUser);
+                        await _Context.SaveChangesAsync();
+                    }
+                    catch
+                    {
+                        throw new AppException("Database error while updating external user", HttpStatusCode.Conflict);
+                    }
+                }
+
+                // 4. Map ClientUserDM → UserSM for JWT
+                var userSM = _mapper.Map<UserSM>(clientUser);
+
+                // 5. Generate JWT token
+                var token = JWTToken.GenerateJWTToken(_configuration, userSM);
+
+                // 6. Map ClientUserDM → LoginResponseSM using AutoMapper
+                var response = _mapper.Map<LoginResponseSM>(clientUser);
+                response.Token = new JwtSecurityTokenHandler().WriteToken(token);
+                response.Expiration = token.ValidTo;
+
+                // 7. Handle image in response
+                if (!string.IsNullOrEmpty(clientUser.ImagePath) && File.Exists(clientUser.ImagePath))
+                {
+                    response.ImagePath = _imageHelper.ConvertFileToBase64(clientUser.ImagePath);
+                }
+                else if (!string.IsNullOrEmpty(payload.Picture))
+                {
+                    response.ImagePath = await _imageHelper.ConvertImageUrlToBase64Async(payload.Picture);
+
+                    string path = Path.Combine(Directory.GetCurrentDirectory(), @"Images");
+                    clientUser.ImagePath = await _imageHelper.SaveImageFromUrlAsync(payload.Picture, path);
+                    await _Context.SaveChangesAsync();
+                }
+
+                return (response,isNewUser);
+            }
+            catch (Exception ex)
+            {
+                throw new AppException($"Error: {ex.Message}", HttpStatusCode.InternalServerError);
+            }
         }
 
 
     }
+
+
 }
+
+
+
+
+
