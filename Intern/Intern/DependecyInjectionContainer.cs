@@ -23,6 +23,7 @@ namespace Intern.DependencyInjection
             services.AddScoped<EmailService>();
             services.AddScoped<ImageHelper>();
             services.AddScoped<PasswordHelper>();
+            services.AddScoped<TokenHelper>();
            
             
         }

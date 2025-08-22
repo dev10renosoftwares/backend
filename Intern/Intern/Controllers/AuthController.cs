@@ -1,7 +1,9 @@
 ﻿using Common.Helpers;
+using Intern.Common.Helpers;
 using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
 using Intern.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -55,22 +57,44 @@ namespace Intern.Controllers
             }
         }
         [HttpPost("verifyemail")]
-        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailSM verifyEmailSM)
+        public async Task<ApiResponse<string>> VerifyEmail([FromBody] VerifyEmailSM verifyEmailSM)
         {
-            var message = await _authservices.VerifyEmailAsync(verifyEmailSM.Token);
+            RequestValidator.ValidateStrings(verifyEmailSM);
 
-            var response = new ApiResponse<string>
+            try
             {
-                Success = true,
-                Message = message
-            };
+                var message = await _authservices.VerifyEmailAsync(verifyEmailSM.Token);
 
-            return Ok(response);
+                return new ApiResponse<string>
+                {
+                    Success = true,
+                    Message = message,
+                    Data = null
+                };
+            }
+            catch (AppException ex) 
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Data = null
+                };
+            }
+            catch (Exception)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while verifying email.",
+                    Data = null
+                };
+            }
         }
 
 
-       
-      
+
+
         [HttpPost("login")]
         public async Task<ApiResponse<LoginResponseSM>> Login([FromBody] LoginSM loginSM)
         
@@ -110,6 +134,8 @@ namespace Intern.Controllers
         [HttpPost("googlelogin")]
         public async Task<ApiResponse<LoginResponseSM>> GoogleLogin([FromBody] GoogleSM googleSM)
         {
+            RequestValidator.ValidateStrings(googleSM);
+
             try
             {
                
@@ -117,12 +143,12 @@ namespace Intern.Controllers
 
                 if (isNewUser)
                 {
-                    
+
                     return new ApiResponse<LoginResponseSM>
                     {
                         Success = true,
                         Message = "User registered successfully via Google",
-                        Data = null
+                        Data = response
                     };
                 }
                 else
@@ -153,6 +179,46 @@ namespace Intern.Controllers
                     Errors = new List<string> { ex.Message }
                 };
             }
+        }
+
+
+        [Authorize(Roles = "ClientEmployee")]
+        [HttpPost("ChangePassword")]
+
+        public async Task<ApiResponse<string>> ChangePassword([FromBody] ChangePasswordSM changePasswordSM)
+        {
+               RequestValidator.ValidateStrings(changePasswordSM);
+
+            try
+            {
+                var message = await _authservices.ChangePassword(changePasswordSM);
+
+                return new ApiResponse<string>
+                {
+                    Success = true,
+                    Message = message,
+                    Data = null
+                };
+            }
+            catch (AppException ex)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Data = null
+                };
+            }
+            catch (Exception)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while verifying email.",
+                    Data = null
+                };
+            }
+
         }
 
 

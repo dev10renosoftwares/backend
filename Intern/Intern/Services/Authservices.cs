@@ -25,9 +25,10 @@ namespace Intern.Services
         private readonly EmailService _emailService;
         private readonly EncryptionHelper _encryptionHelper;
         private readonly IConfiguration _configuration;
+        private readonly TokenHelper _tokenhelper;
         JWTToken JWTToken = new JWTToken();
 
-        public Authservices(ApiDbContext dbContext,IMapper mapper,PasswordHelper passwordHelper,ImageHelper imageHelper,EmailService emailService,EncryptionHelper encryptionHelper,IConfiguration configuration )
+        public Authservices(ApiDbContext dbContext,IMapper mapper,PasswordHelper passwordHelper,ImageHelper imageHelper,EmailService emailService,EncryptionHelper encryptionHelper,IConfiguration configuration,TokenHelper tokenHelper )
         {
             _Context = dbContext;
             _mapper = mapper;
@@ -36,6 +37,7 @@ namespace Intern.Services
             _emailService = emailService;
             _encryptionHelper = encryptionHelper;
             _configuration = configuration;
+            _tokenhelper = tokenHelper;
         }
 
        
@@ -325,11 +327,49 @@ namespace Intern.Services
             }
         }
 
+        public async Task<string> ChangePassword(ChangePasswordSM changePasswordSM)
+        {
+            if (changePasswordSM.NewPassword != changePasswordSM.ConfirmPassword)
+            {
+                throw new AppException ("New password and confirm password do not match",HttpStatusCode.Conflict);
+            }
 
+            var oldPasswordHash = _passwordHelper.HashPassword(changePasswordSM.OldPassword);
+            var newPasswordHash = _passwordHelper.HashPassword(changePasswordSM.NewPassword);
+
+
+            var userId = _tokenhelper.GetUserIdFromToken();
+
+            var user = await _Context.ClientUsers.FirstOrDefaultAsync(cu => cu.Id == userId);
+
+            if (user == null)
+            {
+                throw new AppException("User not found",HttpStatusCode.NotFound);
+            }
+
+            // Validate old password
+            if ( !_passwordHelper.VerifyPassword(changePasswordSM.OldPassword, user.Password))
+            {
+                throw new AppException("Incorrect old password",HttpStatusCode.BadRequest);            }
+
+            // Prevent same password reuse
+            if (_passwordHelper.VerifyPassword(changePasswordSM.NewPassword, user.Password))
+            {
+                throw new AppException ("New password must be different from old password",HttpStatusCode.BadRequest);
+            }
+
+            // Update password
+            user.Password = _passwordHelper.HashPassword(changePasswordSM.NewPassword);
+
+            await _Context.SaveChangesAsync();
+
+            return "Password changed successfully";
+        }
     }
+ }
 
 
-}
+
 
 
 
