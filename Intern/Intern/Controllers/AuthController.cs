@@ -1,4 +1,5 @@
-﻿using Common.Helpers;
+﻿using System.Net;
+using Common.Helpers;
 using Intern.Common.Helpers;
 using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
@@ -22,74 +23,44 @@ namespace Intern.Controllers
         [HttpPost("signup")]
         public async Task<ApiResponse<string>> SignUp(SignUpSM signUpSM)
         {
-            try
-            {
-                // Call service
-                var resultMessage = await _authservices.SignUpAsync(signUpSM);
 
-                // Return directly as success
-                return new ApiResponse<string>
-                {
-                    Success = true,
-                    Message = resultMessage,
-                    Data = null
-                };
-            }
-            catch (AppException ex)
+            if (!ModelState.IsValid)
             {
-                // Return custom exception as response
-                return new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Data = null
-                };
+                var errors = ModelState.Values
+                                       .SelectMany(v => v.Errors)
+                                       .Select(e => e.ErrorMessage)
+                                       .ToList();
+
+                // Combine all error messages into one string
+                throw new AppException(string.Join(" | ", errors), HttpStatusCode.BadRequest);
+               
             }
-            catch (Exception ex)
-            {
-                // Return any unexpected errors
-                return new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Data = null
-                };
-            }
+            
+                var resultMessage = await _authservices.SignUpAsync(signUpSM);
+            return ApiResponse<string>.SuccessResponse(null,resultMessage);
+
+
         }
         [HttpPost("verifyemail")]
         public async Task<ApiResponse<string>> VerifyEmail([FromBody] VerifyEmailSM verifyEmailSM)
         {
-            RequestValidator.ValidateStrings(verifyEmailSM);
-
-            try
+            if (!ModelState.IsValid)
             {
+                var errors = ModelState.Values
+                                       .SelectMany(v => v.Errors)
+                                       .Select(e => e.ErrorMessage)
+                                       .ToList();
+
+                // Combine all error messages into one string
+                throw new AppException(string.Join(" | ", errors), HttpStatusCode.BadRequest);
+
+            }
+
                 var message = await _authservices.VerifyEmailAsync(verifyEmailSM.Token);
 
-                return new ApiResponse<string>
-                {
-                    Success = true,
-                    Message = message,
-                    Data = null
-                };
-            }
-            catch (AppException ex) 
-            {
-                return new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Data = null
-                };
-            }
-            catch (Exception)
-            {
-                return new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "An error occurred while verifying email.",
-                    Data = null
-                };
-            }
+                return ApiResponse<string>.SuccessResponse(null, message);
+
+            
         }
 
 
@@ -97,89 +68,51 @@ namespace Intern.Controllers
 
         [HttpPost("login")]
         public async Task<ApiResponse<LoginResponseSM>> Login([FromBody] LoginSM loginSM)
-        
         {
-            try
+            if (!ModelState.IsValid)
             {
-        
-                var result = await _authservices.LoginAsync(loginSM);
+                var errors = ModelState.Values
+                                       .SelectMany(v => v.Errors)
+                                       .Select(e => e.ErrorMessage)
+                                       .ToList();
 
-                return new ApiResponse<LoginResponseSM>
-                {
-                    Success = true,
-                    Message = "Login successfully",
-                    Data = result
-                };
+                throw new AppException(string.Join(" | ", errors), HttpStatusCode.BadRequest);
             }
-            catch (AppException ex)
-            {
-                return new ApiResponse<LoginResponseSM>
-                {
-                    Success = false,
-                    Message = "Login failed",
-                    Errors = new List<string> { ex.Message }
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<LoginResponseSM>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred",
-                    Errors = new List<string> { ex.Message }
-                };
-            }
+
+            var result = await _authservices.LoginAsync(loginSM);
+
+            return ApiResponse<LoginResponseSM>.SuccessResponse(
+                result,
+                "Login successfully"
+            );
         }
+
         [HttpPost("googlesignup")]
         [HttpPost("googlelogin")]
-        public async Task<ApiResponse<LoginResponseSM>> GoogleLogin([FromBody] GoogleSM googleSM)
+        public async Task<ApiResponse<LoginResponseSM>> GoogleAuth([FromBody] GoogleSM googleSM)
         {
-            RequestValidator.ValidateStrings(googleSM);
-
-            try
+            if (!ModelState.IsValid)
             {
-               
-                var (response, isNewUser) = await _authservices.ProcessGoogleIdTokenAsync(googleSM);
+                var errors = ModelState.Values
+                                       .SelectMany(v => v.Errors)
+                                       .Select(e => e.ErrorMessage)
+                                       .ToList();
 
-                if (isNewUser)
-                {
+                throw new AppException(string.Join(" | ", errors), HttpStatusCode.BadRequest);
+            }
 
-                    return new ApiResponse<LoginResponseSM>
-                    {
-                        Success = true,
-                        Message = "User registered successfully via Google",
-                        Data = response
-                    };
-                }
-                else
-                {
-                    return new ApiResponse<LoginResponseSM>
-                    {
-                        Success = true,
-                        Message = "Login successful",
-                        Data = response
-                    };
-                }
-            }
-            catch (AppException ex)
-            {
-                return new ApiResponse<LoginResponseSM>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Errors = new List<string> { ex.Message }
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ApiResponse<LoginResponseSM>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred",
-                    Errors = new List<string> { ex.Message }
-                };
-            }
+          
+            var response = await _authservices.ProcessGoogleIdTokenAsync(googleSM);
+
+            string message = googleSM.IsLogin
+                ? "Login successful"
+                : "User registered successfully via Google";
+
+            return ApiResponse<LoginResponseSM>.SuccessResponse(response, message);
         }
+
+        
+
 
 
         [Authorize(Roles = "ClientEmployee")]
@@ -187,39 +120,57 @@ namespace Intern.Controllers
 
         public async Task<ApiResponse<string>> ChangePassword([FromBody] ChangePasswordSM changePasswordSM)
         {
-               RequestValidator.ValidateStrings(changePasswordSM);
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                                        .SelectMany(v => v.Errors)
+                                        .Select(e => e.ErrorMessage)
+                                        .ToList();
 
-            try
-            {
-                var message = await _authservices.ChangePassword(changePasswordSM);
-
-                return new ApiResponse<string>
-                {
-                    Success = true,
-                    Message = message,
-                    Data = null
-                };
-            }
-            catch (AppException ex)
-            {
-                return new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = ex.Message,
-                    Data = null
-                };
-            }
-            catch (Exception)
-            {
-                return new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "An error occurred while verifying email.",
-                    Data = null
-                };
+                throw new AppException(string.Join(" | ", errors), HttpStatusCode.BadRequest);
             }
 
+            var message = await _authservices.ChangePassword(changePasswordSM);
+
+            return ApiResponse<string>.SuccessResponse(message);
         }
+        [HttpPost("forgotpassword")]
+        public async Task<ApiResponse<string>> ForgotPassword( string email)
+        {
+            if (string.IsNullOrEmpty(email) || email.Trim().ToLower() == "null")
+            {
+                throw new AppException("Email cannot be null or empty.", HttpStatusCode.BadRequest);
+            }
+
+           
+                var message = await _authservices.ForgotPasswordAsync(email);
+            return ApiResponse<string>.SuccessResponse(null,message);
+
+                
+        }
+
+        [HttpPost("resetpassword")]
+        public async Task<ApiResponse<string>> ResetPassword([FromBody] ResetPasswordSM resetPasswordSM)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                                        .SelectMany(v => v.Errors)
+                                        .Select(e => e.ErrorMessage)
+                                        .ToList();
+
+                throw new AppException(string.Join(" | ", errors), HttpStatusCode.BadRequest);
+            }
+
+
+            
+                var message = await _authservices.ResetPasswordAsync(resetPasswordSM);
+
+               return ApiResponse<string>.SuccessResponse(null,message);
+
+           
+        }
+
 
 
     }

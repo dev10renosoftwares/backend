@@ -53,7 +53,9 @@ public class ExceptionMiddleware
         {
             Success = false,
             
-            Message = message
+            Message = message,
+
+            StatusCode = status
         };
 
         var result = JsonSerializer.Serialize(response);

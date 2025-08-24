@@ -104,7 +104,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
     db.Database.EnsureCreated(); // Creates DB and tables without migration
 }
-
+app.UseMiddleware<Intern.Common.CustomMiddleware.ExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

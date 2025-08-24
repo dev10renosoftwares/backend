@@ -72,7 +72,7 @@ namespace Intern.Services
                 }
                 catch (Exception)
                 {
-                    throw new AppException("Image save failed", HttpStatusCode.Conflict);
+                    throw new AppException("ImagePath must be Base64 of image", HttpStatusCode.BadRequest);
                 }
             }
 
@@ -190,8 +190,7 @@ namespace Intern.Services
             return responseSM;
         }
 
-        public async Task<(LoginResponseSM Response, bool IsNewUser)> ProcessGoogleIdTokenAsync(GoogleSM googleSM)
-        
+        public async Task<LoginResponseSM> ProcessGoogleIdTokenAsync(GoogleSM googleSM)
         {
             try
             {
@@ -202,23 +201,18 @@ namespace Intern.Services
                 if (string.IsNullOrEmpty(email))
                     throw new AppException("Google did not return an email", HttpStatusCode.Conflict);
 
-                bool isNewUser = false;
-             
+               
                 var clientUser = await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == email);
 
                 if (clientUser == null)
                 {
-                    isNewUser = true;
-
-                    
+                    // New user → create
                     clientUser = new ClientUserDM
                     {
-                      
-
                         Email = email,
                         LoginId = email,
                         Role = UserRoleDM.ClientEmployee,
-                        IsEmailConfirmed = true,  
+                        IsEmailConfirmed = true,
                         Password = null,
                         CreatedOnUtc = DateTime.UtcNow,
                         IsActive = true
@@ -242,14 +236,13 @@ namespace Intern.Services
                 }
                 else
                 {
-                    // User exists → check email confirmation
+                    // Existing user → confirm email if not confirmed
                     if (!clientUser.IsEmailConfirmed)
                     {
-                        clientUser.IsEmailConfirmed= true;
+                        clientUser.IsEmailConfirmed = true;
                         _Context.ClientUsers.Update(clientUser);
                         await _Context.SaveChangesAsync();
                     }
-                        
                 }
 
                 // 3. Ensure exists in ExternalUsers
@@ -272,7 +265,7 @@ namespace Intern.Services
                     }
                     catch
                     {
-                        throw new AppException("Database error while saving external user", HttpStatusCode.Conflict);
+                        throw new AppException("Database error while saving externaluser", HttpStatusCode.Conflict);
                     }
                 }
                 else
@@ -280,32 +273,29 @@ namespace Intern.Services
                     if (!string.IsNullOrEmpty(googleSM.RefreshToken))
                     {
                         externalUser.RefreshToken = googleSM.RefreshToken;
-                        externalUser.LastModifiedOnUtc = DateTime.UtcNow;                        
+                        externalUser.LastModifiedOnUtc = DateTime.UtcNow;
                     }
-                
+
                     try
                     {
-
                         _Context.ExternalUsers.Update(externalUser);
                         await _Context.SaveChangesAsync();
                     }
                     catch
                     {
-                        throw new AppException("Database error while updating external user", HttpStatusCode.Conflict);
+                        throw new AppException("Database error while updating externaluser", HttpStatusCode.Conflict);
                     }
                 }
 
                 // 4. Map ClientUserDM → UserSM for JWT
                 var userSM = _mapper.Map<UserSM>(clientUser);
-
                 var token = JWTToken.GenerateJWTToken(_configuration, userSM);
 
-                // 6. Map ClientUserDM → LoginResponseSM using AutoMapper
+                // 5. Map ClientUserDM → LoginResponseSM
                 var response = _mapper.Map<LoginResponseSM>(clientUser);
                 response.Token = new JwtSecurityTokenHandler().WriteToken(token);
                 response.Expiration = token.ValidTo;
 
-            
                 if (!string.IsNullOrEmpty(clientUser.ImagePath) && File.Exists(clientUser.ImagePath))
                 {
                     response.ImagePath = _imageHelper.ConvertFileToBase64(clientUser.ImagePath);
@@ -319,7 +309,7 @@ namespace Intern.Services
                     await _Context.SaveChangesAsync();
                 }
 
-                return (response,isNewUser);
+                return response; 
             }
             catch (Exception ex)
             {
@@ -331,7 +321,7 @@ namespace Intern.Services
         {
             if (changePasswordSM.NewPassword != changePasswordSM.ConfirmPassword)
             {
-                throw new AppException ("New password and confirm password do not match",HttpStatusCode.Conflict);
+                throw new AppException("New password and confirm password do not match", HttpStatusCode.Conflict);
             }
 
             var oldPasswordHash = _passwordHelper.HashPassword(changePasswordSM.OldPassword);
@@ -344,26 +334,84 @@ namespace Intern.Services
 
             if (user == null)
             {
-                throw new AppException("User not found",HttpStatusCode.NotFound);
+                throw new AppException("User not found", HttpStatusCode.NotFound);
             }
 
             // Validate old password
-            if ( !_passwordHelper.VerifyPassword(changePasswordSM.OldPassword, user.Password))
+            if (!_passwordHelper.VerifyPassword(changePasswordSM.OldPassword, user.Password))
             {
-                throw new AppException("Incorrect old password",HttpStatusCode.BadRequest);            }
+                throw new AppException("Incorrect old password", HttpStatusCode.BadRequest);
+            }
 
             // Prevent same password reuse
             if (_passwordHelper.VerifyPassword(changePasswordSM.NewPassword, user.Password))
             {
-                throw new AppException ("New password must be different from old password",HttpStatusCode.BadRequest);
+                throw new AppException("New password must be different from old password", HttpStatusCode.BadRequest);
             }
 
-            // Update password
+           
             user.Password = _passwordHelper.HashPassword(changePasswordSM.NewPassword);
 
             await _Context.SaveChangesAsync();
 
             return "Password changed successfully";
+        }
+
+        public async Task<string> ForgotPasswordAsync(string email)
+        {
+            var user = await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+                throw new Exception("User not found");
+
+            // payload for token
+            var payload = new ResetPasswordPayloadSM
+            {
+                Email = user.Email,
+                RequestedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(30)
+            };
+
+            var authCode = _encryptionHelper.Encrypt(payload);
+
+            var frontendUrl = "https://myblogapp.com/reset-password";
+            var resetLink = $"{frontendUrl}?authcode={Uri.EscapeDataString(authCode)}";
+
+            await _emailService.SendEmailAsync(user.Email, "Password Reset",
+                $"Click here to reset your password: <a href='{resetLink}'>Reset Password</a>");
+
+            return "Reset link sent to your email";
+    
+        }
+
+        
+
+        public async Task<string> ResetPasswordAsync(ResetPasswordSM resetPasswordSM)
+        {
+            if (resetPasswordSM == null)
+                throw new ArgumentNullException(nameof(resetPasswordSM));
+
+            ResetPasswordPayloadSM payload;
+            try
+            {
+                payload = _encryptionHelper.Decrypt<ResetPasswordPayloadSM>(resetPasswordSM.AuthCode);
+            }
+            catch
+            {
+                throw new Exception("Invalid or tampered link");
+            }
+
+            if (payload.ExpiresAt < DateTime.UtcNow)
+                throw new Exception("Reset link expired");
+
+            var user = await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == payload.Email);
+            if (user == null)
+                throw new Exception("User not found");
+
+            user.Password = _passwordHelper.HashPassword(resetPasswordSM.NewPassword);
+            _Context.ClientUsers.Update(user);
+            await _Context.SaveChangesAsync();
+
+            return "Password reset successful";
         }
     }
  }
