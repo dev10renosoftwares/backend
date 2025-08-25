@@ -8,7 +8,7 @@ namespace Intern.ServiceModels
     {
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email format.")]
-        [DefaultValue("string")]  // 👈 Default value in Swagger
+        [DefaultValue("string")]  
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Password is required.")]
