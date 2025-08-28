@@ -20,6 +20,19 @@ namespace Intern.Controllers
         {
             _authservices = authservices;
         }
+
+        [HttpPost("EmailExists")]
+
+        public async Task<ApiResponse<bool>> verifyEmail (EmailExistsSM emailExists)
+        {
+             bool emailexists = await _authservices.VerifyEmail(emailExists);
+
+            return ApiResponse<bool>.SuccessResponse(emailexists, "Email verification check completed.");
+        }
+
+
+
+
         [HttpPost("signup")]
         public async Task<ApiResponse<string>> SignUp(SignUpSM signUpSM)
         {
@@ -31,7 +44,6 @@ namespace Intern.Controllers
                                        .Select(e => e.ErrorMessage)
                                        .ToList();
 
-                // Combine all error messages into one string
                 throw new AppException(string.Join(" | ", errors), HttpStatusCode.BadRequest);
                
             }
@@ -41,7 +53,7 @@ namespace Intern.Controllers
 
 
         }
-        [HttpPost("verifyemail")]
+        [HttpPost("verifyemailforSignUp")]
         public async Task<ApiResponse<string>> VerifyEmail([FromBody] VerifyEmailSM verifyEmailSM)
         {
             if (!ModelState.IsValid)

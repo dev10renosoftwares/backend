@@ -40,7 +40,30 @@ namespace Intern.Services
             _tokenhelper = tokenHelper;
         }
 
-       
+        public async Task<bool> VerifyEmail(EmailExistsSM emailExists)
+        {
+           
+
+            // Check in ClientUsers
+            var clientUserExists = await _Context.ClientUsers
+                .AnyAsync(u => u.Email.ToLower() == emailExists.Email);
+
+            if (clientUserExists)
+                return false;
+
+            // Check in ApplicationUsers
+            var appUserExists = await _Context.ApplicationUsers
+                .AnyAsync(u => u.Email.ToLower() == emailExists.Email);
+
+            if (appUserExists)
+                return false;
+
+            // not found in either table → available
+            return true;
+        }
+
+
+
         public async Task<string> SignUpAsync(SignUpSM signUpSM)
         {
           
@@ -48,7 +71,7 @@ namespace Intern.Services
                 .FirstOrDefaultAsync(u => u.Email.ToLower() == signUpSM.Email.ToLower());
 
             if (existingUser != null)
-                throw new AppException("Email already exists", HttpStatusCode.Conflict);
+                throw new AppException("Email already exists", HttpStatusCode.Forbidden);
 
           
             var user = _mapper.Map<ClientUserDM>(signUpSM);
@@ -90,13 +113,55 @@ namespace Intern.Services
              var encryptedToken = _encryptionHelper.Encrypt(emailVerification);
 
             // Build link
-            var verifyLink = $"https://yourdomain.com/verify-email?token={encryptedToken}";
+             var verifyLink = $"https://yourdomain.com/verify-email?token={encryptedToken}";
+
+            #region EmailBody
+            var emailBody = $@"
+            <html>
+            <head>
+              <style>
+                .button {{
+                  background-color: #4CAF50;
+                  border: none;
+                  color: white;
+                  padding: 12px 24px;
+                  text-align: center;
+                  text-decoration: none;
+                  display: inline-block;
+                  font-size: 16px;
+                  margin: 16px 0;
+                  cursor: pointer;
+                  border-radius: 6px;
+                }}
+                .content {{
+                  font-family: Arial, sans-serif;
+                  line-height: 1.6;
+                  color: #333333;
+                }}
+              </style>
+            </head>
+            <body>
+              <div class='content'>
+                <h2>Hello {user.Email},</h2>
+                <p>Thank you for registering with us. Please verify your email address to complete your account setup.</p>
+                <p style='text-align:center;'>
+                  <a href='{verifyLink}' class='button'>Verify Email</a>
+                </p>
+                <p>If the button above does not work, copy and paste the following link into your browser:</p>
+                <p><a href='{verifyLink}'>{verifyLink}</a></p>
+                <p>Best regards,<br/>Your Company Name</p>
+              </div>
+            </body>
+            </html>
+            ";
+
+            #endregion EmailBody
 
             // Send email
             await _emailService.SendEmailAsync(
                 user.Email,
                 "Verify your email",
-                $"Click here to verify your account: {verifyLink}"
+                emailBody
             );
 
             return "Signup successful! Please check your email to verify your account.";
@@ -376,7 +441,10 @@ namespace Intern.Services
             var frontendUrl = "https://myblogapp.com/reset-password";
             var resetLink = $"{frontendUrl}?authcode={Uri.EscapeDataString(authCode)}";
 
+
+
             await _emailService.SendEmailAsync(user.Email, "Password Reset",
+
                 $"Click here to reset your password: <a href='{resetLink}'>Reset Password</a>");
 
             return "Reset link sent to your email";
