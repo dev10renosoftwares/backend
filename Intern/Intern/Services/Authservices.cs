@@ -106,7 +106,7 @@ namespace Intern.Services
             var emailVerification = new EmailVerificationSM
             {
                 Email = user.Email,  
-                ExpiresAt = DateTime.UtcNow.AddHours(1) 
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10) 
             };
 
        
@@ -199,8 +199,79 @@ namespace Intern.Services
                 throw;
             }
 
+
             
         }
+
+        public async Task<string> ResendVerificationEmailAsync(string email)
+        {
+            var user = await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+                throw new AppException("User not found", HttpStatusCode.NotFound);
+
+            if (user.IsEmailConfirmed)
+                throw new AppException("Email already verified", HttpStatusCode.Conflict);
+
+            // Build a fresh verification payload
+            var emailVerification = new EmailVerificationSM
+            {
+                Email = user.Email,
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            };
+
+            var encryptedToken = _encryptionHelper.Encrypt(emailVerification);
+
+            var verifyLink = $"https://yourdomain.com/verify-email?token={encryptedToken}";
+
+            #region EmailBody
+            var emailBody = $@"
+            <html>
+            <head>
+              <style>
+                .button {{
+                  background-color: #4CAF50;
+                  border: none;
+                  color: white;
+                  padding: 12px 24px;
+                  text-align: center;
+                  text-decoration: none;
+                  display: inline-block;
+                  font-size: 16px;
+                  margin: 16px 0;
+                  cursor: pointer;
+                  border-radius: 6px;
+                }}
+                .content {{
+                  font-family: Arial, sans-serif;
+                  line-height: 1.6;
+                  color: #333333;
+                }}
+              </style>
+            </head>
+            <body>
+              <div class='content'>
+                <h2>Hello {user.Email},</h2>
+                <p>Thank you for registering with us. Please verify your email address to complete your account setup.</p>
+                <p style='text-align:center;'>
+                  <a href='{verifyLink}' class='button'>Verify Email</a>
+                </p>
+                <p>If the button above does not work, copy and paste the following link into your browser:</p>
+                <p><a href='{verifyLink}'>{verifyLink}</a></p>
+                <p>Best regards,<br/>Your Company Name</p>
+              </div>
+            </body>
+            </html>
+            ";
+
+            #endregion EmailBody
+
+            await _emailService.SendEmailAsync(user.Email, "Resend Email Verification", emailBody);
+
+            return "Verification email resent. Please check your inbox.";
+        }
+
+
 
         public async Task<LoginResponseSM> LoginAsync(LoginSM loginSM)
         {
@@ -426,7 +497,7 @@ namespace Intern.Services
         {
             var user = await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
-                throw new Exception("User not found");
+                throw new AppException("User not found",HttpStatusCode.NotFound);
 
             // payload for token
             var payload = new ResetPasswordPayloadSM
@@ -442,10 +513,56 @@ namespace Intern.Services
             var resetLink = $"{frontendUrl}?authcode={Uri.EscapeDataString(authCode)}";
 
 
+            #region EmailBody
+            var emailBody = $@"
+    <html>
+    <head>
+      <style>
+        .button {{
+          background-color: #007BFF;
+          border: none;
+          color: white;
+          padding: 12px 24px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          margin: 16px 0;
+          cursor: pointer;
+          border-radius: 6px;
+        }}
+        .content {{
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          color: #333333;
+        }}
+      </style>
+    </head>
+    <body>
+      <div class='content'>
+        <h2>Hello {user.Email},</h2>
+        <p>We received a request to reset your password. Click the button below to reset it:</p>
+        <p style='text-align:center;'>
+          <a href='{resetLink}' class='button'>Reset Password</a>
+        </p>
+        <p>If the button above does not work, copy and paste this link into your browser:</p>
+        <p><a href='{resetLink}'>{resetLink}</a></p>
+        <p>This link will expire in 30 minutes.</p>
+        <p>If you did not request a password reset, please ignore this email.</p>
+        <p>Best regards,<br/>Your Company Name</p>
+      </div>
+    </body>
+    </html>
+    ";
 
-            await _emailService.SendEmailAsync(user.Email, "Password Reset",
+            #endregion EmailBody
 
-                $"Click here to reset your password: <a href='{resetLink}'>Reset Password</a>");
+
+
+            await _emailService.SendEmailAsync(user.Email, "Password Reset", emailBody);
+
+
+
 
             return "Reset link sent to your email";
     
@@ -465,15 +582,15 @@ namespace Intern.Services
             }
             catch
             {
-                throw new Exception("Invalid or tampered link");
+                throw new AppException("Invalid or tampered link",HttpStatusCode.BadRequest);
             }
 
             if (payload.ExpiresAt < DateTime.UtcNow)
-                throw new Exception("Reset link expired");
+                throw new AppException("Reset link expired",HttpStatusCode.Gone);
 
             var user = await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == payload.Email);
             if (user == null)
-                throw new Exception("User not found");
+                throw new AppException("User not found",HttpStatusCode.NotFound);
 
             user.Password = _passwordHelper.HashPassword(resetPasswordSM.NewPassword);
             _Context.ClientUsers.Update(user);

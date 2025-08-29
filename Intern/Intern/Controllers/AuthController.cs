@@ -68,15 +68,22 @@ namespace Intern.Controllers
 
             }
 
-                var message = await _authservices.VerifyEmailAsync(verifyEmailSM.Token);
+            var message = await _authservices.VerifyEmailAsync(verifyEmailSM.Token);
 
-                return ApiResponse<string>.SuccessResponse(null, message);
-
-            
+            return ApiResponse<string>.SuccessResponse(null, message);
         }
 
+        [HttpPost("resendVerification")]
+        public async Task<ApiResponse<string>> ResendVerification(string email)
+        {
+            
+            if (string.IsNullOrWhiteSpace(email))
+                throw new AppException("Email is required", HttpStatusCode.BadRequest);
 
+            var result = await _authservices.ResendVerificationEmailAsync(email);
 
+            return ApiResponse<string>.SuccessResponse(null, result);
+        }
 
         [HttpPost("login")]
         public async Task<ApiResponse<LoginResponseSM>> Login([FromBody] LoginSM loginSM)
