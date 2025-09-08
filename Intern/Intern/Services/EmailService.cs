@@ -3,6 +3,7 @@ using System.Net;
 
 namespace Intern.Services
 {
+   
     public class EmailService
     {
         private readonly IConfiguration _config;

@@ -21,6 +21,8 @@ namespace Intern.DependencyInjection
             // Register services
             services.AddScoped<Authservices>();
             services.AddScoped<EmailService>();
+            services.AddScoped<DepartmentService>();
+            services.AddScoped<PostService>();
             services.AddScoped<ImageHelper>();
             services.AddScoped<PasswordHelper>();
             services.AddScoped<TokenHelper>();

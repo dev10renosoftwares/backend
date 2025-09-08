@@ -1,10 +1,7 @@
 ﻿namespace Intern.DataModels.User
 {
     public class ClientUserDM : BaseUserDM
-    {       
-        
-    
-       
+    {    
         public bool IsEmailConfirmed { get; set; } = false;
 
         public bool IsMobileNumberConfirmed { get; set; } = false;

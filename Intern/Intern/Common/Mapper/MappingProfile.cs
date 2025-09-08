@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Intern.DataModels.Exams;
 using Intern.DataModels.User;
 using Intern.ServiceModels;
 
@@ -24,13 +25,32 @@ namespace Intern.Common.Mapper
 
         
 
-                // ClientUserDM -> LoginResponseSM (for direct mapping)
+                    // ClientUserDM -> LoginResponseSM (for direct mapping)
                   CreateMap<ClientUserDM, LoginResponseSM>()
                     .ForMember(dest => dest.Token, opt => opt.Ignore())
                     .ForMember(dest => dest.Expiration, opt => opt.Ignore())
                     .ForMember(dest => dest.ImagePath, opt => opt.Ignore());
+
+                     //Department
+                     CreateMap<AddDepartmentSM, DepartmentDM>()
+                     .ForMember(dest => dest.Id, opt => opt.Ignore())
+                    .ForMember(dest => dest.CreatedOnUtc, opt => opt.Ignore());
+
+                // **Add this mapping for your GetAllAsync / GetByIdAsync**
+                CreateMap<DepartmentDM, DepartmentSM>().ReverseMap();
+
+
+                // ✅ Post mappings
+                CreateMap<PostDM, PostSM>().ReverseMap();
+                CreateMap<AddPostSM, PostDM>();
+
+
+
+
             }
+            
             }
+     
     }
  }
 
