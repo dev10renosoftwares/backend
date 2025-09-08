@@ -20,18 +20,18 @@ namespace Intern.Controllers
         {
             _authservices = authservices;
         }
-
         [HttpPost("EmailExists")]
-
-        public async Task<ApiResponse<bool>> verifyEmail (EmailExistsSM emailExists)
+        public async Task<ApiResponse<string>> VerifyEmail(EmailExistsSM emailExists)
         {
-             bool emailexists = await _authservices.VerifyEmail(emailExists);
+            bool exists = await _authservices.VerifyEmail(emailExists);
 
-            return ApiResponse<bool>.SuccessResponse(emailexists, "Email verification check completed.");
+            if (exists)
+            {
+                return ApiResponse<string>.SuccessResponse(null, "Email exists in the system.");
+            }
+
+            return ApiResponse<string>.FailureResponse(null, "Email does not exist in the system.");
         }
-
-
-
 
         [HttpPost("signup")]
         public async Task<ApiResponse<string>> SignUp(SignUpSM signUpSM)

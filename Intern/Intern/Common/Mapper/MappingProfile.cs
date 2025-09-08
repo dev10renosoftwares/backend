@@ -2,6 +2,7 @@
 using Intern.DataModels.Exams;
 using Intern.DataModels.User;
 using Intern.ServiceModels;
+using Intern.ServiceModels.Exams;
 
 namespace Intern.Common.Mapper
 {
@@ -18,6 +19,7 @@ namespace Intern.Common.Mapper
                     // Domain -> Service mappings
                     CreateMap<ApplicationUserDM, UserSM>().ReverseMap();
                     CreateMap<ClientUserDM, UserSM>().ReverseMap();
+                    CreateMap<DepartmentPostsDM, DepartmentPostsSM>().ReverseMap();
                    
 
                     // UserSM -> LoginResponseSM

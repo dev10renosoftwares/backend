@@ -1,4 +1,4 @@
-﻿namespace Intern.ServiceModels
+﻿namespace Intern.ServiceModels.Exams
 {
     public class AddDepartmentSM
     {

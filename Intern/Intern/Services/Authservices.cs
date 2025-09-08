@@ -42,24 +42,21 @@ namespace Intern.Services
 
         public async Task<bool> VerifyEmail(EmailExistsSM emailExists)
         {
-           
+            var email = emailExists.Email.ToLower();
 
-            // Check in ClientUsers
             var clientUserExists = await _Context.ClientUsers
-                .AnyAsync(u => u.Email.ToLower() == emailExists.Email);
+                .AnyAsync(u => u.Email.ToLower() == email);
 
             if (clientUserExists)
-                return false;
+                return true;
 
-            // Check in ApplicationUsers
             var appUserExists = await _Context.ApplicationUsers
-                .AnyAsync(u => u.Email.ToLower() == emailExists.Email);
+                .AnyAsync(u => u.Email.ToLower() == email);
 
             if (appUserExists)
-                return false;
+                return true;
 
-            // not found in either table → available
-            return true;
+            return false;
         }
 
 

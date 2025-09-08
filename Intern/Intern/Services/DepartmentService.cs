@@ -5,6 +5,7 @@ using Intern.Data;
 using Intern.DataModels.Exams;
 using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
+using Intern.ServiceModels.Exams;
 using Intern.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -96,5 +97,69 @@ namespace Intern.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task AssignPostsAsync(AssignPostsSM objSM)
+        {
+            var department = await _context.Departments.FindAsync(objSM.DepartmentId);
+            if (department == null)
+                throw new AppException($"Department with Id {objSM.DepartmentId} not found.", HttpStatusCode.NotFound);
+
+            foreach (var postId in objSM.PostIds)
+            {
+                var post = await _context.Posts.FindAsync(postId);
+                if (post == null)
+                    throw new AppException($"Post with Id {postId} not found.", HttpStatusCode.NotFound);
+
+                var exists = await _context.DepartmentPosts
+                    .FirstOrDefaultAsync(dp => dp.DepartmentId == objSM.DepartmentId && dp.PostId == postId);
+
+                if (exists == null)
+                {
+                    _context.DepartmentPosts.Add(new DepartmentPostsDM
+                    {
+                        DepartmentId = objSM.DepartmentId,
+                        PostId = postId,
+                        PostDate = DateTime.Now,
+                    });
+                }
+                else
+                {
+                    throw new AppException("Some posts were already assigned to this department ", HttpStatusCode.Conflict);
+                }
+               
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> AssignPostToDepartmentAsync(DepartmentPostsSM objSM)
+        {
+            var department = await _context.Departments.FindAsync(objSM.DepartmentId);
+            if (department == null)
+                throw new AppException($"Department with Id {objSM.DepartmentId} not found.", HttpStatusCode.NotFound);
+            var post = await _context.Posts.FindAsync(objSM.PostId);
+            if (post == null)
+                throw new AppException($"Post with Id {objSM.PostId} not found.", HttpStatusCode.NotFound);
+
+            var exists = await _context.DepartmentPosts
+                .FirstOrDefaultAsync(dp => dp.DepartmentId == objSM.DepartmentId && dp.PostId == objSM.PostId);
+
+            if (exists == null)
+            {                
+                var dm = _mapper.Map<DepartmentPostsDM>(objSM);
+                await _context.DepartmentPosts.AddAsync(dm);
+                if (await _context.SaveChangesAsync() > 0)
+                {
+                    return true;
+                }
+                throw new AppException("Something went wrong while assigning post to department", HttpStatusCode.BadRequest);
+            }
+            else
+            {
+                throw new AppException("Posts is already assigned to this department ", HttpStatusCode.Conflict);
+            }
+            
+        }
+
     }
 }

@@ -1,9 +1,8 @@
-﻿using Intern.DataModels.Exams;
-using Intern.ServiceModels;
+﻿using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
+using Intern.ServiceModels.Exams;
 using Intern.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Intern.Controllers
@@ -67,6 +66,18 @@ namespace Intern.Controllers
 
             return ApiResponse<string>.SuccessResponse(null, "Department deleted successfully");
         }
+
+        [Authorize(Roles = "SystemAdmin")]
+        [HttpPost("assign-posts")]
+        public async Task<ApiResponse<string>> AssignPostsToDepartment([FromBody] DepartmentPostsSM request)
+        {
+            
+            await _service.AssignPostToDepartmentAsync(request);
+
+            return ApiResponse<string>.SuccessResponse(null, "Posts assigned successfully");
+        }
+
+
     }
 }
     

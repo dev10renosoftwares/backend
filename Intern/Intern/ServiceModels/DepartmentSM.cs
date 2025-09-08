@@ -1,18 +1,12 @@
-﻿namespace Intern.ServiceModels
+﻿using Intern.ServiceModels.BaseServiceModels;
+
+namespace Intern.ServiceModels
 {
-    public class DepartmentSM
+    public class DepartmentSM : BaseSM
     {
-        public int Id { get; set; }
         public string DepartmentName { get; set; }
         public string Description { get; set; }
-
-        public DateTime CreatedOnUtc { get; set; }
-
-        public string? CreatedBy { get; set; }
-        public DateTime? LastModifiedOnUtc { get; set; }
-        public string? LastModifiedBy { get; set; }
+        
     }
-
-
 
 }

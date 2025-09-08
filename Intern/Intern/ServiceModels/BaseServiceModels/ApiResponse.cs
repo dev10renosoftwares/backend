@@ -28,18 +28,17 @@ namespace Intern.ServiceModels.BaseServiceModels
                     Data = data
                 };
             }
-            public static ApiResponse<T> FailureResponse(string message, HttpStatusCode statusCode = HttpStatusCode.BadRequest, T data = default)
+        public static ApiResponse<T> FailureResponse(T? data = default,string message = "",HttpStatusCode statusCode = HttpStatusCode.BadRequest)
+        {
+            return new ApiResponse<T>
             {
-                return new ApiResponse<T>
-                {
-                    Success = false,
-                    Message = message,
-                    StatusCode = statusCode,
-                    Data = data
-                };
-            }
-
-            public static ApiResponse<T> ErrorResponse(string message = "An unexpected error occurred", HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
+                Success = false,
+                Data = data,
+                Message = message,
+                StatusCode = statusCode
+            };
+        }
+        public static ApiResponse<T> ErrorResponse( string message = "An unexpected error occurred", HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
             {
                 return new ApiResponse<T>
                 {
