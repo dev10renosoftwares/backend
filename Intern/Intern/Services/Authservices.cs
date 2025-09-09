@@ -103,7 +103,7 @@ namespace Intern.Services
             var emailVerification = new EmailVerificationSM
             {
                 Email = user.Email,  
-                ExpiresAt = DateTime.UtcNow.AddMinutes(10) 
+                ExpiresAt = DateTime.UtcNow.AddDays(1) 
             };
 
        
