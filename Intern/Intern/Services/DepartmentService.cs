@@ -42,7 +42,7 @@ namespace Intern.Services
         }
 
 
-        public async Task<string> CreateAsync(AddDepartmentSM department)
+        public async Task<string> CreateAsync(DepartmentSM department)
         {
             // Check if a department with the same name already exists
             bool exists = await _context.Departments
@@ -61,12 +61,11 @@ namespace Intern.Services
             return null; 
         }
 
-        public async Task<bool> UpdateAsync(int id, AddDepartmentSM updateDepartmentSM)
+        public async Task<bool> UpdateAsync(DepartmentSM updateDepartmentSM)
         {
-            if (id <= 0)
-                throw new AppException("Invalid Department Id", HttpStatusCode.BadRequest);
+           
 
-            var existing = await _context.Departments.FindAsync(id);
+            var existing = await _context.Departments.FindAsync(updateDepartmentSM.Id);
             if (existing == null) return false;
 
             if (!string.IsNullOrWhiteSpace(updateDepartmentSM.DepartmentName) && updateDepartmentSM.DepartmentName != "string")
@@ -98,40 +97,6 @@ namespace Intern.Services
             return true;
         }
 
-        public async Task AssignPostsAsync(AssignPostsSM objSM)
-        {
-            var department = await _context.Departments.FindAsync(objSM.DepartmentId);
-            if (department == null)
-                throw new AppException($"Department with Id {objSM.DepartmentId} not found.", HttpStatusCode.NotFound);
-
-            foreach (var postId in objSM.PostIds)
-            {
-                var post = await _context.Posts.FindAsync(postId);
-                if (post == null)
-                    throw new AppException($"Post with Id {postId} not found.", HttpStatusCode.NotFound);
-
-                var exists = await _context.DepartmentPosts
-                    .FirstOrDefaultAsync(dp => dp.DepartmentId == objSM.DepartmentId && dp.PostId == postId);
-
-                if (exists == null)
-                {
-                    _context.DepartmentPosts.Add(new DepartmentPostsDM
-                    {
-                        DepartmentId = objSM.DepartmentId,
-                        PostId = postId,
-                        PostDate = DateTime.Now,
-                    });
-                }
-                else
-                {
-                    throw new AppException("Some posts were already assigned to this department ", HttpStatusCode.Conflict);
-                }
-               
-            }
-
-            await _context.SaveChangesAsync();
-        }
-
         public async Task<bool> AssignPostToDepartmentAsync(DepartmentPostsSM objSM)
         {
             var department = await _context.Departments.FindAsync(objSM.DepartmentId);
@@ -159,6 +124,29 @@ namespace Intern.Services
                 throw new AppException("Posts is already assigned to this department ", HttpStatusCode.Conflict);
             }
             
+        }
+        public async Task<bool> RemovepostsfromDepartmentAsync(RemovepostsfromDepartmentSM removeposts)
+        {
+            var department = await _context.Departments.FindAsync(removeposts.DepartmentId);
+            if (department == null)
+                throw new AppException($"Department with Id {removeposts.DepartmentId} not found.", HttpStatusCode.NotFound);
+
+            var post = await _context.Posts.FindAsync(removeposts.PostId);
+            if (post == null)
+                throw new AppException($"Post with Id {removeposts.PostId} not found.", HttpStatusCode.NotFound);
+
+           
+            var deptPost = await _context.DepartmentPosts
+                .FirstOrDefaultAsync(dp => dp.DepartmentId == removeposts.DepartmentId && dp.PostId == removeposts.PostId);
+
+            if (deptPost == null)
+                throw new AppException("This post is not assigned to the department.", HttpStatusCode.BadRequest);
+
+            _context.DepartmentPosts.Remove(deptPost);
+            await _context.SaveChangesAsync();
+
+            return true;
+
         }
 
     }

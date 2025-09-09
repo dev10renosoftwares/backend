@@ -34,7 +34,7 @@ namespace Intern.Common.Mapper
                     .ForMember(dest => dest.ImagePath, opt => opt.Ignore());
 
                      //Department
-                     CreateMap<AddDepartmentSM, DepartmentDM>()
+                     CreateMap<DepartmentSM, DepartmentDM>()
                      .ForMember(dest => dest.Id, opt => opt.Ignore())
                     .ForMember(dest => dest.CreatedOnUtc, opt => opt.Ignore());
 

@@ -1,8 +1,8 @@
 ﻿namespace Intern.ServiceModels.Exams
 {
-    public class AssignPostsSM
+    public class RemovepostsfromDepartmentSM
     {
         public int DepartmentId { get; set; }
-        public int PostIds { get; set; } 
+        public int PostId { get; set; }
     }
 }

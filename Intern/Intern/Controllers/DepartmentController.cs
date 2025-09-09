@@ -38,7 +38,7 @@ namespace Intern.Controllers
 
         [Authorize(Roles = "SystemAdmin")]
         [HttpPost]
-        public async Task<ApiResponse<string>> Create([FromBody] AddDepartmentSM addDepartmentSM)
+        public async Task<ApiResponse<string>> Create([FromBody] DepartmentSM addDepartmentSM)
         {
 
             await _service.CreateAsync(addDepartmentSM);
@@ -47,9 +47,9 @@ namespace Intern.Controllers
 
         [Authorize(Roles = "SystemAdmin")]
         [HttpPut("{id}")]
-        public async Task<ApiResponse<string>> Update(int id, [FromBody] AddDepartmentSM updateDepartmentSM)
+        public async Task<ApiResponse<string>> Update(int id, [FromBody] DepartmentSM updateDepartmentSM)
         {
-            var success = await _service.UpdateAsync(id, updateDepartmentSM);
+            var success = await _service.UpdateAsync(updateDepartmentSM);
             if (!success)
                 return ApiResponse<string>.ErrorResponse("Department not found");
 
@@ -76,7 +76,14 @@ namespace Intern.Controllers
 
             return ApiResponse<string>.SuccessResponse(null, "Posts assigned successfully");
         }
+        [Authorize(Roles ="SystemAdmin")]
+        [HttpPost("remove-posts")]
 
+        public async Task<ApiResponse<string>> RemovepostsfromDepartment([FromBody] RemovepostsfromDepartmentSM removepostsfromDepartment)
+        {
+            await _service.RemovepostsfromDepartmentAsync(removepostsfromDepartment);
+            return ApiResponse<string>.SuccessResponse(null, "Post removed from Department Successfully");
+        }
 
     }
 }
