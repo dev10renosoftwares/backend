@@ -4,6 +4,7 @@ using System.Security.Cryptography.X509Certificates;
 using AutoMapper;
 using Common.Helpers;
 using Google.Apis.Auth;
+using Intern.Common;
 using Intern.Common.Helpers;
 using Intern.Data;
 using Intern.DataModels.Enums;
@@ -13,6 +14,7 @@ using Intern.ServiceModels.BaseServiceModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Intern.Services
 {
@@ -26,9 +28,11 @@ namespace Intern.Services
         private readonly EncryptionHelper _encryptionHelper;
         private readonly IConfiguration _configuration;
         private readonly TokenHelper _tokenhelper;
+        private readonly AuthSettings _authSettings;
+        
         JWTToken JWTToken = new JWTToken();
 
-        public Authservices(ApiDbContext dbContext,IMapper mapper,PasswordHelper passwordHelper,ImageHelper imageHelper,EmailService emailService,EncryptionHelper encryptionHelper,IConfiguration configuration,TokenHelper tokenHelper )
+        public Authservices(ApiDbContext dbContext,IMapper mapper,PasswordHelper passwordHelper,ImageHelper imageHelper,EmailService emailService,EncryptionHelper encryptionHelper,IConfiguration configuration,TokenHelper tokenHelper, IOptions<AuthSettings> authSettings )
         {
             _Context = dbContext;
             _mapper = mapper;
@@ -38,6 +42,7 @@ namespace Intern.Services
             _encryptionHelper = encryptionHelper;
             _configuration = configuration;
             _tokenhelper = tokenHelper;
+            _authSettings = authSettings.Value;
         }
 
         public async Task<bool> VerifyEmail(EmailExistsSM emailExists)
@@ -103,7 +108,7 @@ namespace Intern.Services
             var emailVerification = new EmailVerificationSM
             {
                 Email = user.Email,  
-                ExpiresAt = DateTime.UtcNow.AddHours(1) 
+                ExpiresAt = DateTime.UtcNow.AddMinutes(_authSettings.EmailVerificationExpiryMinutes)
             };
 
        
@@ -182,6 +187,10 @@ namespace Intern.Services
                 if (user == null)
                     throw new AppException("User Not Found", HttpStatusCode.NotFound);
 
+                if (user.IsEmailConfirmed)
+                    throw new AppException("Email is already verified.", HttpStatusCode.Conflict);
+
+
                 // 4. Mark as verified
                 user.IsEmailConfirmed = true;
                 _Context.ClientUsers.Update(user);
@@ -214,7 +223,7 @@ namespace Intern.Services
             var emailVerification = new EmailVerificationSM
             {
                 Email = user.Email,
-                ExpiresAt = DateTime.UtcNow.AddHours(1)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(_authSettings.EmailVerificationExpiryMinutes)
             };
 
             var encryptedToken = _encryptionHelper.Encrypt(emailVerification);
@@ -501,7 +510,7 @@ namespace Intern.Services
             {
                 Email = user.Email,
                 RequestedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(30)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(_authSettings.ResetPasswordExpiryMinutes)
             };
 
             var authCode = _encryptionHelper.Encrypt(payload);

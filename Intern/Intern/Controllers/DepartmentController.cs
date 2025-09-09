@@ -85,6 +85,9 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Post removed from Department Successfully");
         }
 
+       
+
+
     }
 }
     

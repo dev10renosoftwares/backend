@@ -1,4 +1,5 @@
 using System.Text;
+using Intern.Common;
 using Intern.Common.Helpers;
 using Intern.Data;
 using Intern.DependencyInjection;
@@ -51,6 +52,9 @@ builder.Services.AddScoped<EncryptionHelper>(sp =>
     var key = config["EncryptionSettings:Key"];
     return new EncryptionHelper(key);
 });
+builder.Services.Configure<AuthSettings>(
+    builder.Configuration.GetSection("AuthSettings"));
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
