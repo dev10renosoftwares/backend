@@ -4,11 +4,15 @@ using Intern.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Intern.ServiceModels.Exams;
+using Common.Helpers;
+using System.Net;
 
 namespace Intern.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class PostController : ControllerBase
     {
         private readonly PostService _postService;
@@ -34,25 +38,24 @@ namespace Intern.Controllers
             return ApiResponse<PostSM>.SuccessResponse(result, "Post fetched successfully");
         }
 
-
+        [AllowAnonymous]
         [Authorize(Roles = "SystemAdmin")]
         [HttpPost]
-        public async Task<ApiResponse<string>> Create([FromBody] AddPostSM addPostSM)
+        public async Task<ApiResponse<string>> Create([FromBody] PostSM addPostSM)
         {
             await _postService.CreateAsync(addPostSM);
             return ApiResponse<string>.SuccessResponse(null, "Post added successfully");
         }
 
         [Authorize(Roles = "SystemAdmin")]
-        [HttpPut("{id}")]
-        public async Task<ApiResponse<string>> Update(int id, [FromBody] AddPostSM updatePostSM)
+        [HttpPut]
+        
+        public async Task<ApiResponse<string>> UpdatePost( int? departmentPostId, [FromBody] PostSM postsm)
         {
-            var success = await _postService.UpdateAsync(id, updatePostSM);
-            if (!success)
-                return ApiResponse<string>.ErrorResponse("Post not found");
-
-            return ApiResponse<string>.SuccessResponse(null, "Post updated successfully");
+            var result = await _postService.UpdatePostAsync( departmentPostId, postsm);
+            return ApiResponse<string>.SuccessResponse(null, result);
         }
+
 
         [Authorize(Roles = "SystemAdmin")]
         [HttpDelete("{id}")]
@@ -64,6 +67,30 @@ namespace Intern.Controllers
 
             return ApiResponse<string>.SuccessResponse(null, "Post deleted successfully");
         }
+
+       
+        [Authorize(Roles = "SystemAdmin")]
+        [HttpPost("create-and-assign-post")]
+        public async Task<ApiResponse<string>> CreateAndAssignPost([FromBody] AddPostandAssignSM request)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                                       .SelectMany(v => v.Errors)
+                                       .Select(e => e.ErrorMessage)
+                                       .ToList();
+
+                throw new AppException(string.Join(" | ", errors), HttpStatusCode.BadRequest);
+            }
+
+            
+            
+            var result = await _postService.CreateAndAssignPostAsync(request);
+
+            return ApiResponse<string>.SuccessResponse(null, result);
+        }
+
+
     }
 }
 

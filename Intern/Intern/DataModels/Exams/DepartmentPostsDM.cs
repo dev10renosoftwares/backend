@@ -10,7 +10,7 @@ namespace Intern.DataModels.Exams
 
         [ForeignKey(nameof(DepartmentDM))]
         public int? DepartmentId { get; set; }
-        public DepartmentDM Department { get; set; }
+        public DepartmentDM? Department { get; set; }
 
         [ForeignKey(nameof(PostDM))]
         public int? PostId { get; set; }

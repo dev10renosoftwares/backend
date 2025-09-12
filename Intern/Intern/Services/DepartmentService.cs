@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.CodeDom;
+using System.Net;
 using AutoMapper;
 using Common.Helpers;
 using Intern.Data;
@@ -16,11 +17,13 @@ namespace Intern.Services
     {
         private readonly ApiDbContext _context;
         private readonly IMapper _mapper;
+        private readonly PostService _postService;
 
-        public DepartmentService(ApiDbContext context,IMapper mapper)
+        public DepartmentService(ApiDbContext context,IMapper mapper, PostService postService)
         {
             _context = context;
             _mapper = mapper;
+            _postService = postService;
         }
         public async Task<IEnumerable<DepartmentSM>> GetAllAsync()
         {
@@ -107,7 +110,7 @@ namespace Intern.Services
                 throw new AppException($"Post with Id {objSM.PostId} not found.", HttpStatusCode.NotFound);
 
             var exists = await _context.DepartmentPosts
-                .FirstOrDefaultAsync(dp => dp.DepartmentId == objSM.DepartmentId && dp.PostId == objSM.PostId);
+                .FirstOrDefaultAsync(dp => dp.DepartmentId == objSM.DepartmentId && dp.PostId == objSM.PostId && dp.PostDate == objSM.PostDate && dp.NotificationNumber == objSM.NotificationNumber);
 
             if (exists == null)
             {                
@@ -127,26 +130,54 @@ namespace Intern.Services
         }
         public async Task<bool> RemovepostsfromDepartmentAsync(RemovepostsfromDepartmentSM removeposts)
         {
-            var department = await _context.Departments.FindAsync(removeposts.DepartmentId);
-            if (department == null)
-                throw new AppException($"Department with Id {removeposts.DepartmentId} not found.", HttpStatusCode.NotFound);
+            var departmentpost = await _context.DepartmentPosts.FindAsync(removeposts.DepartmentPostId);
+            if (departmentpost == null)
+                throw new AppException($"Departmentpost with Id {removeposts.DepartmentPostId} not found.", HttpStatusCode.NotFound);
 
-            var post = await _context.Posts.FindAsync(removeposts.PostId);
-            if (post == null)
-                throw new AppException($"Post with Id {removeposts.PostId} not found.", HttpStatusCode.NotFound);
-
-           
-            var deptPost = await _context.DepartmentPosts
-                .FirstOrDefaultAsync(dp => dp.DepartmentId == removeposts.DepartmentId && dp.PostId == removeposts.PostId);
-
-            if (deptPost == null)
-                throw new AppException("This post is not assigned to the department.", HttpStatusCode.BadRequest);
-
-            _context.DepartmentPosts.Remove(deptPost);
+            _context.DepartmentPosts.Remove(departmentpost);
             await _context.SaveChangesAsync();
 
             return true;
 
+        }
+
+        public async Task<DepartmentPostsResponseSM> GetPostsByDepartmentId (int deptId)
+        {
+            var existingDept = await _context.Departments.FindAsync(deptId);
+            if(existingDept == null)
+            {
+                throw new AppException("DepartmentId Not Found", HttpStatusCode.NotFound);
+            }
+            var response = new DepartmentPostsResponseSM()
+            {
+                Department = _mapper.Map<DepartmentSM>(existingDept),
+                Posts = new List<DepartmentPostRelationSM>()
+            };
+
+            var deptPosts = await _context.DepartmentPosts.Where(x=>x.DepartmentId == deptId).ToListAsync();    
+            if(deptPosts.Count == 0)
+            {
+                return response;
+            }
+
+            var posts = new List<DepartmentPostRelationSM>();
+            foreach (var post in deptPosts) 
+            {
+             
+                var sm = await _postService.GetPostByDepartmentPostIdAsync((int)post.PostId);
+                if(sm != null)
+                {
+                    var depPost = new DepartmentPostRelationSM()
+                    {
+                        DepartmentPostId = post.Id,
+                        Post = sm
+                    };  
+                    posts.Add(depPost);
+                }
+            }
+            
+            response.Posts = posts;
+            return response;
         }
 
       

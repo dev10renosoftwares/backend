@@ -15,11 +15,11 @@ namespace Intern.DataModels.Exams
 
         [ForeignKey(nameof(DepartmentPostsDM))]
         public int? DepartmentPostId { get; set; }
-        public DepartmentPostsDM DepartmentPosts { get; set; }
+        public DepartmentPostsDM? DepartmentPosts { get; set; }
 
         [ForeignKey(nameof(MCQsDM))]
         public int? MCQId { get; set; }
-        public MCQsDM MCQ { get; set; }
+        public MCQsDM? MCQ { get; set; }
 
         public McqTypeDM MCQType { get; set; }
     }

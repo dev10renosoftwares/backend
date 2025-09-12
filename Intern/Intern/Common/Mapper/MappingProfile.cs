@@ -20,39 +20,50 @@ namespace Intern.Common.Mapper
                     CreateMap<ApplicationUserDM, UserSM>().ReverseMap();
                     CreateMap<ClientUserDM, UserSM>().ReverseMap();
                     CreateMap<DepartmentPostsDM, DepartmentPostsSM>().ReverseMap();
-                   
+
 
                     // UserSM -> LoginResponseSM
                     CreateMap<UserSM, LoginResponseSM>();
 
-        
+
 
                     // ClientUserDM -> LoginResponseSM (for direct mapping)
-                  CreateMap<ClientUserDM, LoginResponseSM>()
-                    .ForMember(dest => dest.Token, opt => opt.Ignore())
-                    .ForMember(dest => dest.Expiration, opt => opt.Ignore())
-                    .ForMember(dest => dest.ImagePath, opt => opt.Ignore());
+                    CreateMap<ClientUserDM, LoginResponseSM>()
+                      .ForMember(dest => dest.Token, opt => opt.Ignore())
+                      .ForMember(dest => dest.Expiration, opt => opt.Ignore())
+                      .ForMember(dest => dest.ImagePath, opt => opt.Ignore());
 
-                     //Department
-                     CreateMap<DepartmentSM, DepartmentDM>()
-                     .ForMember(dest => dest.Id, opt => opt.Ignore())
-                    .ForMember(dest => dest.CreatedOnUtc, opt => opt.Ignore());
+                    //Department
+                    CreateMap<DepartmentSM, DepartmentDM>()
+                    .ForMember(dest => dest.Id, opt => opt.Ignore())
+                   .ForMember(dest => dest.CreatedOnUtc, opt => opt.Ignore());
 
-                // **Add this mapping for your GetAllAsync / GetByIdAsync**
-                CreateMap<DepartmentDM, DepartmentSM>().ReverseMap();
-
-
-                // ✅ Post mappings
-                CreateMap<PostDM, PostSM>().ReverseMap();
-                CreateMap<AddPostSM, PostDM>();
+                    // **Add this mapping for your GetAllAsync / GetByIdAsync**
+                    CreateMap<DepartmentDM, DepartmentSM>().ReverseMap();
 
 
+                    // ✅ Post mappings
+                    CreateMap<PostDM, PostSM>().ReverseMap();
+
+                    CreateMap<PostSM, PostDM>()
+                      .ForMember(dest => dest.Id, opt => opt.Ignore())           // EF generates PK
+                       .ForMember(dest => dest.CreatedOnUtc, opt => opt.Ignore()); // will set manually
 
 
+                    // ✅ Map AddPostandAssignSM → PostDM
+                    CreateMap<AddPostandAssignSM, PostDM>();
+                    
+
+                    // ✅ Map AddPostandAssignSM → DepartmentPostsDM
+                    CreateMap<AddPostandAssignSM, DepartmentPostsDM>();
+                   
+
+
+
+
+                }
             }
-            
-            }
-     
+
     }
  }
 

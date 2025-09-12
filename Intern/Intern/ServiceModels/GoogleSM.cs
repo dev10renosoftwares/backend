@@ -8,7 +8,7 @@ namespace Intern.ServiceModels
         public string IdToken { get; set; }
 
         [Required(ErrorMessage ="RefreshToken is required")]
-        public string? RefreshToken { get; set; }
+        public string RefreshToken { get; set; }
 
         [Required(ErrorMessage = "IsLogin flag is required.")]
         public bool IsLogin { get; set; }

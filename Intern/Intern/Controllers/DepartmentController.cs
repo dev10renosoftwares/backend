@@ -9,6 +9,7 @@ namespace Intern.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class DepartmentController : ControllerBase
     {
        private readonly DepartmentService _service;
@@ -85,7 +86,14 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Post removed from Department Successfully");
         }
 
+        [Authorize(Roles = "SystemAdmin")]
+        [HttpPost("getall-posts")]
+        public async Task<ApiResponse<DepartmentPostsResponseSM>> GetPostsByDepartmentId(int deptId)
        
+        {
+            var response = await _service.GetPostsByDepartmentId(deptId);
+            return ApiResponse<DepartmentPostsResponseSM>.SuccessResponse(response, "Posts fetched successfully");
+        }
 
 
     }

@@ -8,13 +8,13 @@ namespace Intern.ServiceModels
 
         public string PostName { get; set; }
         public string Description { get; set; }
+        public DateTime? PostDate { get; set; }
+
+        public string? NotificationNumber { get; set; }
 
     }
 
+   
 
-    public class AddPostSM
-    {
-        public string? PostName { get; set; }
-        public string? Description { get; set; }
-    }
+    
 }

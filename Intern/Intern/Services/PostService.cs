@@ -5,6 +5,9 @@ using Intern.DataModels.Exams;
 using Intern.ServiceModels;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using Intern.ServiceModels.Exams;
+using Intern.ServiceModels.BaseServiceModels;
 
 namespace Intern.Services
 {
@@ -32,7 +35,26 @@ namespace Intern.Services
             return _mapper.Map<PostSM>(entity);
         }
 
-        public async Task<string> CreateAsync(AddPostSM post)
+        public async Task<PostSM?> GetPostByDepartmentPostIdAsync(int id)
+        {
+            var entity = await _context.DepartmentPosts.FindAsync(id);
+            if (entity == null) return null;
+            int pId = (int)entity.PostId;
+            int deptId = (int)entity.DepartmentId;
+            var deptDm = await _context.Departments.FindAsync(deptId);
+            if(deptDm == null) return null;
+            var dm = await _context.Posts.FindAsync(pId);
+            if (dm != null)
+            {
+                var sm = _mapper.Map<PostSM>(dm);
+                sm.NotificationNumber = entity.NotificationNumber;
+                sm.PostDate = entity.PostDate;
+                return sm;
+            }
+            return null;
+        }
+
+        public async Task<string> CreateAsync(PostSM post)
         {
             bool exists = await _context.Posts
                 .AnyAsync(p => p.PostName.ToLower() == post.PostName.Trim().ToLower());
@@ -48,30 +70,68 @@ namespace Intern.Services
             return null;
         }
 
-        public async Task<bool> UpdateAsync(int id, AddPostSM updatePostSM)
+        public async Task<string> UpdatePostAsync(int? departmentPostId, PostSM model)
         {
-            if (id <= 0)
-                throw new AppException("Invalid Post Id", HttpStatusCode.BadRequest);
+            bool updated = false;
 
-            var existing = await _context.Posts.FindAsync(id);
-            if (existing == null) return false;
+            // ---- Update Posts table (only if PostId given) ----
+            if (model.Id > 0)
+            {
+                var post = await _context.Posts.FindAsync(model.Id);
+                if (post == null)
+                    throw new AppException("Post not found", HttpStatusCode.NotFound);
 
-            if (!string.IsNullOrWhiteSpace(updatePostSM.PostName) && updatePostSM.PostName != "string")
-                existing.PostName = updatePostSM.PostName;
+                if (!string.IsNullOrWhiteSpace(model.PostName) && model.PostName != "string")
+                {
+                    post.PostName = model.PostName;
+                    updated = true;
+                }
 
-            if (!string.IsNullOrWhiteSpace(updatePostSM.Description) && updatePostSM.Description != "string")
-                existing.Description = updatePostSM.Description;
+                if (!string.IsNullOrWhiteSpace(model.Description) && model.Description != "string")
+                {
+                    post.Description = model.Description;
+                    updated = true;
+                }
 
-            existing.LastModifiedOnUtc = DateTime.UtcNow;
+                if (updated)
+                    post.LastModifiedOnUtc = DateTime.UtcNow;
+            }
+
+           
+            if (departmentPostId.HasValue && departmentPostId.Value > 0)
+            {
+                var deptPost = await _context.DepartmentPosts
+                    .FirstOrDefaultAsync(dp => dp.Id == departmentPostId.Value);
+
+                if (deptPost == null)
+                    throw new AppException("Department-Post mapping not found", HttpStatusCode.NotFound);
+
+                if (model.PostDate.HasValue)  
+                {
+                    deptPost.PostDate = model.PostDate.Value;
+                    updated = true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(model.NotificationNumber) && model.NotificationNumber != "string")
+                {
+                    deptPost.NotificationNumber = model.NotificationNumber;
+                    updated = true;
+                }
+            }
+
+            if (!updated)
+                throw new AppException("No valid fields provided to update", HttpStatusCode.BadRequest);
 
             await _context.SaveChangesAsync();
-            return true;
+            return "Post updated successfully";
         }
+
+
 
         public async Task<bool> DeleteAsync(int id)
         {
             if (id <= 0)
-                throw new ArgumentException("Invalid Post Id");
+                throw new AppException("Invalid Post Id", HttpStatusCode.BadRequest);
 
             var existing = await _context.Posts.FindAsync(id);
             if (existing == null) return false;
@@ -80,5 +140,38 @@ namespace Intern.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+
+        public async Task<string> CreateAndAssignPostAsync(AddPostandAssignSM request)
+        {
+            var department = await _context.Departments.FindAsync(request.DepartmentId);
+            if (department == null)
+                throw new AppException($"Department with Id {request.DepartmentId} not found.", HttpStatusCode.NotFound);
+
+            bool exists = await _context.Posts
+                .AnyAsync(p => p.PostName.ToLower() == request.PostName.Trim().ToLower());
+
+            if (exists)
+                throw new AppException("A post with the same name already exists.", HttpStatusCode.Conflict);
+
+            // Step 1: Map to PostDM
+            var postEntity = _mapper.Map<PostDM>(request);
+            postEntity.CreatedOnUtc = DateTime.UtcNow;
+
+            _context.Posts.Add(postEntity);
+            
+            
+           await _context.SaveChangesAsync(); 
+
+            // Step 2: Map to DepartmentPostsDM
+            var deptPostEntity = _mapper.Map<DepartmentPostsDM>(request);
+            deptPostEntity.PostId = postEntity.Id;
+
+            _context.DepartmentPosts.Add(deptPostEntity);
+            await _context.SaveChangesAsync();
+
+            return "Post created and assigned successfully.";
+        }
+
     }
 }
