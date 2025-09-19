@@ -1,4 +1,5 @@
-﻿using Intern.DataModels.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using Intern.DataModels.Enums;
 
 namespace Intern.ServiceModels
 {
@@ -8,8 +9,7 @@ namespace Intern.ServiceModels
         public int Id { get; set; }
         
         public string Email { get; set; }
-
-
+        public string Name { get; set; }
         public string? ImagePath { get; set; }
         public UserRoleDM Role { get; set; }
 

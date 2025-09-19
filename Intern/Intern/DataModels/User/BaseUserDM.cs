@@ -11,6 +11,10 @@ namespace Intern.DataModels.User
         [MaxLength(50, ErrorMessage = "LoginId cannot exceed 50 characters")]
         public string LoginId { get; set; }
 
+        [Required(ErrorMessage = "Name is required")]
+        [MaxLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+        public string Name { get; set; }
+
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email format")]
         [MaxLength(100, ErrorMessage = "Email cannot exceed 100 characters")]

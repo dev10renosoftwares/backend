@@ -77,6 +77,7 @@ namespace Intern.Controllers
 
             return ApiResponse<string>.SuccessResponse(null, "Posts assigned successfully");
         }
+
         [Authorize(Roles ="SystemAdmin")]
         [HttpPost("remove-posts")]
 

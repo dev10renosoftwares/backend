@@ -13,4 +13,4 @@ namespace Intern.DataModels.BaseDataModels
         public DateTime? LastModifiedOnUtc { get; set; }
         public string? LastModifiedBy { get; set; }
     }
-}
+}  

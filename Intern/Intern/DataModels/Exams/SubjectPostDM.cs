@@ -16,7 +16,7 @@ namespace Intern.DataModels.Exams
         public int? PostId { get; set; }
         public PostDM? Post { get; set; }
 
-        public ICollection<MCQPostSubjectDM> MCQPostSubjects { get; set; }
+       // public ICollection<MCQPostSubjectDM> MCQPostSubjects { get; set; }
 
     }
 }

@@ -19,7 +19,7 @@ namespace Intern.DataModels.Exams
         public DateTime PostDate { get; set; }
 
         public string? NotificationNumber { get; set; }
-        public ICollection<MCQPostSubjectDM> MCQPostSubjects { get; set; }
+      //  public ICollection<MCQPostSubjectDM> MCQPostSubjects { get; set; }
 
     }
 }

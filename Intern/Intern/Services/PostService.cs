@@ -35,24 +35,28 @@ namespace Intern.Services
             return _mapper.Map<PostSM>(entity);
         }
 
-        public async Task<PostSM?> GetPostByDepartmentPostIdAsync(int id)
+        public async Task<(PostSM? Post, int? DeptPostId)> GetDeptPostDetails(int deptid, int postId)
         {
-            var entity = await _context.DepartmentPosts.FindAsync(id);
-            if (entity == null) return null;
-            int pId = (int)entity.PostId;
-            int deptId = (int)entity.DepartmentId;
-            var deptDm = await _context.Departments.FindAsync(deptId);
-            if(deptDm == null) return null;
-            var dm = await _context.Posts.FindAsync(pId);
-            if (dm != null)
+            var post = await GetByIdAsync(postId);
+            if (post == null)
             {
-                var sm = _mapper.Map<PostSM>(dm);
-                sm.NotificationNumber = entity.NotificationNumber;
-                sm.PostDate = entity.PostDate;
-                return sm;
+                return (null, null);
             }
-            return null;
+
+            var entity = await _context.DepartmentPosts
+                .FirstOrDefaultAsync(x => x.DepartmentId == deptid && x.PostId == postId);
+
+            if (entity == null)
+            {
+                return (null, null);
+            }
+
+            post.NotificationNumber = entity.NotificationNumber;
+            post.PostDate = entity.PostDate;
+
+            return (post, entity.Id);
         }
+
 
         public async Task<string> CreateAsync(PostSM post)
         {

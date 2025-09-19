@@ -3,6 +3,7 @@ using Common.Helpers;
 using Intern.Common.Helpers;
 using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
+using Intern.ServiceModels.User;
 using Intern.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,10 +16,12 @@ namespace Intern.Controllers
     public class AuthController : ControllerBase
     {
         private readonly Authservices _authservices;
+        private readonly DashboardService _dashService;
 
-        public AuthController(Authservices authservices)
+        public AuthController(Authservices authservices,DashboardService dashboardService)
         {
             _authservices = authservices;
+            _dashService = dashboardService;
         }
         [HttpPost("EmailExists")]
         public async Task<ApiResponse<string>> VerifyEmail(EmailExistsSM emailExists)
@@ -189,6 +192,22 @@ namespace Intern.Controllers
 
            
         }
+
+        [HttpGet("{departmentId}")]
+       
+        public async Task<ApiResponse<DashboardSM>> GetDashboardDetails(int departmentId)
+        {
+            if (departmentId <= 0)
+                return ApiResponse<DashboardSM>.ErrorResponse("Invalid department id");
+
+            var result = await _dashService.GetDashboardAsync(departmentId);
+
+            if (result == null)
+                return ApiResponse<DashboardSM>.ErrorResponse("Dashboard data not found");
+
+            return ApiResponse<DashboardSM>.SuccessResponse(result, "Dashboard fetched successfully");
+        }
+
 
 
 

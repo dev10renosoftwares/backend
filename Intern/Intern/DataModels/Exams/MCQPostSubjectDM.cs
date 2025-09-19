@@ -9,13 +9,13 @@ namespace Intern.DataModels.Exams
         [Key]
         public int Id { get; set; }
 
-        [ForeignKey(nameof(SubjectPostDM))]
-        public int? SubjectPostId { get; set; }
-        public SubjectPostDM? SubjectPost { get; set; }
+        [ForeignKey(nameof(SubjectDM))]
+        public int? SubjectId { get; set; }
+        public SubjectDM? Subject { get; set; }
 
-        [ForeignKey(nameof(DepartmentPostsDM))]
-        public int? DepartmentPostId { get; set; }
-        public DepartmentPostsDM? DepartmentPosts { get; set; }
+        [ForeignKey(nameof(PostDM))]
+        public int? PostId { get; set; }
+        public PostDM? Post { get; set; }
 
         [ForeignKey(nameof(MCQsDM))]
         public int? MCQId { get; set; }

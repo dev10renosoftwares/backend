@@ -11,6 +11,10 @@ namespace Intern.ServiceModels
         [DefaultValue("string")]  
         public string Email { get; set; }
 
+        [Required(ErrorMessage = "Name is required")]
+        [MaxLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+        public string Name { get; set; }
+
         [Required(ErrorMessage = "Password is required.")]
         [StringLength(20, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 20 characters.")]
         [RegularExpression("^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{6,20}$",

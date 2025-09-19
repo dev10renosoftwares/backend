@@ -33,6 +33,7 @@ namespace Intern.Data
         public DbSet<DepartmentPostsDM> DepartmentPosts { get; set; }
         public DbSet<SubjectPostDM> SubjectPosts { get; set; }
         public DbSet<MCQPostSubjectDM> MCQPostSubjects { get; set; }
+        public DbSet<NotificationsDM> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -49,13 +50,13 @@ namespace Intern.Data
                 .HasOne(dp => dp.Department)
                 .WithMany(d => d.DepartmentPosts)
                 .HasForeignKey(dp => dp.DepartmentId)
-                .OnDelete(DeleteBehavior.Cascade); // Cascade delete
+                .OnDelete(DeleteBehavior.Cascade); // Department → DepartmentPosts
 
             modelBuilder.Entity<DepartmentPostsDM>()
                 .HasOne(dp => dp.Post)
                 .WithMany(p => p.DepartmentPosts)
                 .HasForeignKey(dp => dp.PostId)
-                .OnDelete(DeleteBehavior.Cascade); // Cascade delete
+                .OnDelete(DeleteBehavior.Cascade); // Post → DepartmentPosts
 
             // -------------------------
             // SubjectPostDM Config
@@ -80,30 +81,26 @@ namespace Intern.Data
             // MCQPostSubjectDM Config
             // -------------------------
             modelBuilder.Entity<MCQPostSubjectDM>()
-                .HasIndex(mps => new { mps.MCQId, mps.SubjectPostId, mps.DepartmentPostId })
+                .HasIndex(mps => new { mps.MCQId, mps.SubjectId, mps.PostId })
                 .IsUnique();
 
-            // Cascade from MCQ → MCQPostSubjectDM
             modelBuilder.Entity<MCQPostSubjectDM>()
                 .HasOne(mps => mps.MCQ)
                 .WithMany(m => m.MCQPostSubjects)
                 .HasForeignKey(mps => mps.MCQId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade); // MCQ → MCQPostSubjectDM
 
-            // Cascade from DepartmentPosts → MCQPostSubjectDM
             modelBuilder.Entity<MCQPostSubjectDM>()
-                .HasOne(mps => mps.DepartmentPosts)
-                .WithMany(dp => dp.MCQPostSubjects)
-                .HasForeignKey(mps => mps.DepartmentPostId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(mps => mps.Subject)
+                .WithMany(s => s.MCQPostSubjects)
+                .HasForeignKey(mps => mps.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade); // Subject → MCQPostSubjectDM
 
-            // SubjectPost → MCQPostSubjectDM cannot cascade due to multiple paths
-            // Use Restrict or ClientCascade, and manually delete in code
             modelBuilder.Entity<MCQPostSubjectDM>()
-                .HasOne(mps => mps.SubjectPost)
-                .WithMany(sp => sp.MCQPostSubjects)
-                .HasForeignKey(mps => mps.SubjectPostId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(mps => mps.Post)
+                .WithMany(p => p.MCQPostSubjects)
+                .HasForeignKey(mps => mps.PostId)
+                .OnDelete(DeleteBehavior.Cascade); // Post → MCQPostSubjectDM
         }
     }
 }

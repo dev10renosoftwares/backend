@@ -1,10 +1,10 @@
-﻿using Intern.DataModels.BaseDataModels;
-using Intern.DataModels.User;
+﻿using Intern.ServiceModels.BaseServiceModels;
 
-namespace Intern.DataModels.Exams
+namespace Intern.ServiceModels.Exams
 {
-    public class MCQsDM : BaseDM
+    public class MCQsSM:BaseSM
     {
+
         public string Question { get; set; }
         public string OptionA { get; set; }
         public string OptionB { get; set; }
@@ -14,7 +14,5 @@ namespace Intern.DataModels.Exams
         public string Answer { get; set; }
 
         public string? Explanation { get; set; }
-
-        public ICollection<MCQPostSubjectDM> MCQPostSubjects { get; set; }
     }
 }

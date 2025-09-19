@@ -1,15 +1,19 @@
 ﻿using Intern.DataModels.Enums;
+using Intern.ServiceModels.BaseServiceModels;
 using System.ComponentModel.DataAnnotations;
 
 namespace Intern.ServiceModels
 {
-    public class ClientUserSM
+    public class ClientUserSM : BaseSM
     {
-        public int Id { get; set; }
 
         [Required(ErrorMessage = "LoginId is required")]
         [MaxLength(50, ErrorMessage = "LoginId cannot exceed 50 characters")]
-        public string LoginId { get; set; }
+        public string UserName { get; set; }
+
+        [Required(ErrorMessage = "Name is required")]
+        [MaxLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+        public string Name { get; set; }
 
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email format")]
@@ -20,7 +24,7 @@ namespace Intern.ServiceModels
         public string? Password { get; set; }
 
         // ✅ No max length restriction — will map to nvarchar(max) in SQL
-        public string? ImagePath { get; set; }
+        public string? ImageBase64 { get; set; }
 
         [Required(ErrorMessage = "Role is required")]
         public UserRoleDM Role { get; set; }   // Admin, SuperAdmin, etc.
@@ -29,13 +33,10 @@ namespace Intern.ServiceModels
         [MaxLength(15, ErrorMessage = "Mobile number cannot exceed 15 digits")]
         public string? MobileNumber { get; set; }
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } 
 
-        [DataType(DataType.DateTime)]
-        public DateTime CreatedOn { get; set; } = DateTime.Now;
+        public bool IsEmailConfirmed { get; set; } 
 
-        [DataType(DataType.DateTime)]
-        public DateTime? UpdatedOn { get; set; }
-
+        public bool IsMobileNumberConfirmed { get; set; } 
     }
 }

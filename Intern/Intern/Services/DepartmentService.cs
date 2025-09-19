@@ -164,13 +164,13 @@ namespace Intern.Services
             foreach (var post in deptPosts) 
             {
              
-                var sm = await _postService.GetPostByDepartmentPostIdAsync((int)post.PostId);
-                if(sm != null)
+                var sm = await _postService.GetDeptPostDetails(deptId, (int)post.PostId);
+                if(sm.Post != null)
                 {
                     var depPost = new DepartmentPostRelationSM()
                     {
-                        DepartmentPostId = post.Id,
-                        Post = sm
+                        DepartmentPostId = (int)sm.DeptPostId,
+                        Post = sm.Post
                     };  
                     posts.Add(depPost);
                 }
@@ -180,7 +180,36 @@ namespace Intern.Services
             return response;
         }
 
-      
+        public async Task<List<PostSM>> GetPostsByDepartmentId(int depId, int skip, int top)
+        {
+            // Check if the department exists
+            var existing = await GetByIdAsync(depId);
+            if (existing == null)
+                throw new AppException("DepartmentId Not Found", HttpStatusCode.NotFound);
+
+            
+            var postsWithDate = await (from dp in _context.DepartmentPosts
+                                       join p in _context.Posts on dp.PostId equals p.Id
+                                       where dp.DepartmentId == depId
+                                       select new PostSM
+                                       {
+                                           Id = p.Id,
+                                           PostName = p.PostName,          
+                                           Description = p.Description,    
+                                           PostDate = dp.PostDate,      
+                                           NotificationNumber = dp.NotificationNumber
+                                       })
+                                       .OrderByDescending(p => p.PostDate)
+                                       .Skip(skip)
+                                       .Take(top)
+                                       .ToListAsync();
+
+            return postsWithDate;
+        }
+
+
+
+
 
 
     }

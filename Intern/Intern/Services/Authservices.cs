@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Intern.ServiceModels.Enums;
 
 namespace Intern.Services
 {
@@ -315,10 +316,10 @@ namespace Intern.Services
                 throw new AppException("Incorrect Password", HttpStatusCode.Unauthorized);
 
             // 3. Handle image BEFORE mapping to response
-            if (!string.IsNullOrEmpty(userSM.ImagePath) && File.Exists(userSM.ImagePath))
-                userSM.ImagePath = _imageHelper.ConvertFileToBase64(userSM.ImagePath);
+            if (!string.IsNullOrEmpty(userSM.ImageBase64) && File.Exists(userSM.ImageBase64))
+                userSM.ImageBase64 = _imageHelper.ConvertFileToBase64(userSM.ImageBase64);
             else
-                userSM.ImagePath = null;
+                userSM.ImageBase64 = null;
 
             // 4. Generate JWT
             userSM.Role = loginSM.Role; 
@@ -352,6 +353,7 @@ namespace Intern.Services
                     clientUser = new ClientUserDM
                     {
                         Email = email,
+                        Name = payload.Name,
                         LoginId = email,
                         Role = UserRoleDM.ClientEmployee,
                         IsEmailConfirmed = true,

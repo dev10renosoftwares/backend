@@ -9,5 +9,7 @@ namespace Intern.DataModels.Exams
         public string Description { get; set; }
         public ICollection<DepartmentPostsDM> DepartmentPosts { get; set; }
         public ICollection<SubjectPostDM> SubjectPosts { get; set; }
+
+        public ICollection<MCQPostSubjectDM> MCQPostSubjects { get; set; }
     }
 }
