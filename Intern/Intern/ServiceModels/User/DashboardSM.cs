@@ -4,7 +4,7 @@ namespace Intern.ServiceModels.User
 {
     public class DashboardSM
     {       
-        public List<PostSM> Exams { get; set; }// Department posts by deparmentId 
+        public List<PostSM> Exams { get; set; }
 
         public List<PostSM> UpcomingExams { get; set; }  
 

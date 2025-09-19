@@ -193,20 +193,7 @@ namespace Intern.Controllers
            
         }
 
-        [HttpGet("{departmentId}")]
        
-        public async Task<ApiResponse<DashboardSM>> GetDashboardDetails(int departmentId)
-        {
-            if (departmentId <= 0)
-                return ApiResponse<DashboardSM>.ErrorResponse("Invalid department id");
-
-            var result = await _dashService.GetDashboardAsync(departmentId);
-
-            if (result == null)
-                return ApiResponse<DashboardSM>.ErrorResponse("Dashboard data not found");
-
-            return ApiResponse<DashboardSM>.SuccessResponse(result, "Dashboard fetched successfully");
-        }
 
 
 

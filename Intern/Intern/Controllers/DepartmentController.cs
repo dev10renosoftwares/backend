@@ -1,6 +1,7 @@
 ﻿using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
 using Intern.ServiceModels.Exams;
+using Intern.ServiceModels.User;
 using Intern.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,13 @@ namespace Intern.Controllers
     public class DepartmentController : ControllerBase
     {
        private readonly DepartmentService _service;
+        private readonly DashboardService _dashService;
 
-            public DepartmentController(DepartmentService service)
+        public DepartmentController(DepartmentService service,DashboardService dashboardService )
             {
                 _service = service;
-            }
+               _dashService = dashboardService;
+        }
       
         [HttpGet]
         public async Task<ApiResponse<IEnumerable<DepartmentSM>>> GetAll()
@@ -94,6 +97,21 @@ namespace Intern.Controllers
         {
             var response = await _service.GetPostsByDepartmentId(deptId);
             return ApiResponse<DepartmentPostsResponseSM>.SuccessResponse(response, "Posts fetched successfully");
+        }
+
+        [HttpGet("dashboard/{departmentId}")]
+
+        public async Task<ApiResponse<DashboardSM>> GetDashboardDetails(int departmentId)
+        {
+            if (departmentId <= 0)
+                return ApiResponse<DashboardSM>.ErrorResponse("Invalid department id");
+
+            var result = await _dashService.GetDashboardAsync(departmentId);
+
+            if (result == null)
+                return ApiResponse<DashboardSM>.ErrorResponse("Dashboard data not found");
+
+            return ApiResponse<DashboardSM>.SuccessResponse(result, "Dashboard fetched successfully");
         }
 
 
