@@ -93,9 +93,13 @@ namespace Intern.Common.Mapper
                     .ForAllMembers(opts => opts.Condition(
                     (src, dest, srcMember) => srcMember != null));
 
-                 }
+
+
+                   CreateMap<MCQsDM, MCQsSM>();
 
             }
+
+        }
             
 
     }

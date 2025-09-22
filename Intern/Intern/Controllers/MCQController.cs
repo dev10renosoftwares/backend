@@ -80,5 +80,14 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "MCQ assigned successfully");
         }
 
+        [HttpGet("get-mcqs")]
+        public async Task<ApiResponse<List<MCQsSM>>> GetAllMCQs(int postId, int departmentId)
+        {
+            var result = await _mCQService.GetMCQsByDepartmentAndPostAsync(departmentId, postId);
+            return ApiResponse<List<MCQsSM>>.SuccessResponse(result, "MCQs fetched successfully");
+        }
+
+
     }
 }
+  
