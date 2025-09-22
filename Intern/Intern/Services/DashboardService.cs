@@ -41,14 +41,13 @@ namespace Intern.Services
             var postIds = allPosts.Select(p => p.Id).ToList();
 
             // 4. Fetch notifications for this department + posts
-            var dm = await _context.Notifications
-                .Where(n => n.DepartmentId == deptId && postIds.Contains(n.PostId))
-                .OrderByDescending(n => n.CreatedOnUtc)
-                .Take(3)
-                .ToListAsync();
+            var allNotifications = await _context.Notifications
+                .Where(n => n.DepartmentId == deptId)      // Only filter by department
+                .OrderByDescending(n => n.CreatedOnUtc)   // Most recent first
+                .ToListAsync();                            // Get all notifications
 
-           
-            var notifications = _mapper.Map<List<NotificationsSM>>(dm);
+
+            var notifications = _mapper.Map<List<NotificationsSM>>(allNotifications);
 
             // 6. Build dashboard response
             var dashboard = new DashboardSM
