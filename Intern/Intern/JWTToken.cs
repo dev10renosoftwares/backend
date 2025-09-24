@@ -32,6 +32,7 @@ namespace Intern
             claims.Add(new Claim("Email", user.Email));
             // claims.Add(new Claim("Role", user.Role.ToString())); // enum → string
             claims.Add(new Claim(ClaimTypes.Role, user.Role.ToString()));
+            claims.Add(new Claim("LoginId", user.LoginId.ToString()));
 
 
 

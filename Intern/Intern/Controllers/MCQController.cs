@@ -1,22 +1,33 @@
-﻿using Intern.ServiceModels;
+﻿using System.Net;
+using Common.Helpers;
+using Intern.Common.Helpers;
+using Intern.Data;
+using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
 using Intern.ServiceModels.Exams;
+using Intern.ServiceModels.User;
 using Intern.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Intern.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class MCQController : ControllerBase
     {
         private readonly MCQService _mCQService;
+        private readonly TokenHelper _tokenHelper;
+        private readonly ApiDbContext _context;
 
-        public MCQController(MCQService mCQService)
+        public MCQController(MCQService mCQService,TokenHelper tokenHelper,ApiDbContext context)
         {
             _mCQService = mCQService;
+            _tokenHelper = tokenHelper;
+            _context = context;
         }
 
         [HttpGet]
@@ -81,11 +92,34 @@ namespace Intern.Controllers
         }
 
         [HttpGet("get-mcqs")]
-        public async Task<ApiResponse<List<MCQsSM>>> GetAllMCQs(int postId, int departmentId)
+        [Authorize]
+        public async Task<ApiResponse<MockTestQuestionsSM>> GetAllMCQs(int postId, int departmentId)
         {
-            var result = await _mCQService.GetMCQsByDepartmentAndPostAsync(departmentId, postId);
-            return ApiResponse<List<MCQsSM>>.SuccessResponse(result, "MCQs fetched successfully");
+            var userId = _tokenHelper.GetUserIdFromToken();
+            var result = await _mCQService.GetMCQsByDepartmentAndPostAsync(userId.Value, departmentId, postId);
+            return ApiResponse<MockTestQuestionsSM>.SuccessResponse(result, "MCQs fetched successfully");
         }
+
+
+        [HttpPost("results")]
+        [Authorize]
+        public async Task<ApiResponse<UserTestDetailsSM>> GetTestResults([FromBody] MockTestQuestionsSM answers)
+        {
+            var userId = _tokenHelper.GetUserIdFromToken();
+
+            var existingUser = await _context.ClientUsers
+                .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
+
+            if (existingUser == null)
+            {
+                throw new AppException("User is not authorized", HttpStatusCode.Unauthorized);
+            }
+  
+            var result = await _mCQService.GetTestResults(answers);
+
+            return ApiResponse<UserTestDetailsSM>.SuccessResponse(result, "MCQs Result fetched successfully");
+        }
+
 
 
     }

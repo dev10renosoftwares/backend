@@ -1,13 +1,18 @@
 ﻿using System.Net;
 using AutoMapper;
 using Common.Helpers;
+using Intern.Common;
+using Intern.Common.Helpers;
 using Intern.Data;
 using Intern.DataModels.Enums;
 using Intern.DataModels.Exams;
+using Intern.DataModels.User;
 using Intern.ServiceModels;
 using Intern.ServiceModels.Enums;
 using Intern.ServiceModels.Exams;
+using Intern.ServiceModels.User;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Intern.Services
 {
@@ -16,14 +21,18 @@ namespace Intern.Services
         private readonly ApiDbContext _context;
         private readonly IMapper _mapper;
         private readonly PostService _postSevice;        
-        private readonly DepartmentService _deptService;        
+        private readonly DepartmentService _deptService;
+        private readonly TokenHelper _tokenHelper;
+        private readonly ExamConfig _examConfig;
 
-        public MCQService(ApiDbContext context,IMapper mapper, PostService postService, DepartmentService deptService)
+        public MCQService(ApiDbContext context,IMapper mapper, PostService postService, DepartmentService deptService,TokenHelper tokenHelper, IOptions<ExamConfig> examConfig)
         {
             _context = context;
             _mapper = mapper;
             _postSevice = postService;
             _deptService = deptService;
+            _tokenHelper = tokenHelper;
+            _examConfig = examConfig.Value;
         }
 
         public async Task<List<MCQsSM>> GetAllAsync()
@@ -118,7 +127,6 @@ namespace Intern.Services
             }
         }
 
-
         public async Task<string> UpdateAsync(MCQsSM updatedMcq)
         {
             var entity = await _context.MCQs.FindAsync(updatedMcq.Id);
@@ -160,9 +168,6 @@ namespace Intern.Services
 
             return "MCQ updated successfully";
         }
-
-
-
         public async Task<bool> DeleteAsync(int id)
         {
             if (id <= 0)
@@ -175,8 +180,6 @@ namespace Intern.Services
             await _context.SaveChangesAsync();
             return true;
         }
-
-
         //incomplete...
         public async Task<bool> AssignMCQToSubjectOrPostAsync(MCQSubjectPostSM objSM)
         {
@@ -246,8 +249,20 @@ namespace Intern.Services
             throw new AppException("Something went wrong while assigning MCQ", HttpStatusCode.BadRequest);
         }
 
-        public async Task<List<MCQsSM>> GetMCQsByDepartmentAndPostAsync(int departmentId, int postId)
+        public async Task<MockTestQuestionsSM> GetMCQsByDepartmentAndPostAsync(int userId, int departmentId, int postId)
         {
+
+            // ✅ Check max tests per user
+            int userTestCount = await _context.UserTestDetails
+                .CountAsync(t => t.UserId == userId);
+
+            if (userTestCount > _examConfig.MaxTestsPerUser)
+                throw new AppException(
+                    $"You cannot attempt more than {_examConfig.MaxTestsPerUser} tests.",
+                    HttpStatusCode.Forbidden
+                );
+
+            string LoginId = _tokenHelper.GetLoginIdFromToken();
             // 1️⃣ Validate Department and Post
             var existingDept = await _deptService.GetByIdAsync(departmentId);
             var existingPost = await _postSevice.GetByIdAsync(postId);
@@ -267,22 +282,120 @@ namespace Intern.Services
                               join mps in _context.MCQPostSubjects
                                   on m.Id equals mps.MCQId
                               where mps.PostId == postId
-                              orderby Guid.NewGuid() // randomize in SQL
+                              orderby Guid.NewGuid() 
                               select m)
-                             .Take(50) // limit results
+                             .Take(50) 
                              .ToListAsync();
 
             // 4️⃣ Map to Service Model
             var mcqsSM = _mapper.Map<List<MCQsSM>>(mcqs);
 
-            // 5️⃣ Hide answers and explanations for exam purposes
+            // 5️⃣ Hide answers and explanations for exam purposes    
             foreach (var mcq in mcqsSM)
             {
                 mcq.Answer = null;
                 mcq.Explanation = null;
             }
+            var userExamDetails = new UserTestDetailsDM
+            {
+                UserId = userId,
+                TestTaken = true,
+                TotalQuestions = mcqsSM.Count,
+                PostId = postId,
+                SubjectId = null,
+                MCQType = McqTypeDM.Post,
+                CreatedBy = LoginId,
+                CreatedOnUtc = DateTime.UtcNow,
+            };
+            await _context.UserTestDetails.AddAsync(userExamDetails);
+            await _context.SaveChangesAsync();
 
-            return mcqsSM;
+            return new MockTestQuestionsSM
+            {
+                UserTestId = userExamDetails.Id,
+                Questions = mcqsSM,
+            };
+                
+        }
+
+        public async Task<AnswerResultSM> IsCorrectAnswer(MCQsSM mcq)
+        {
+            var existingMCQ = await GetByIdAsync(mcq.Id);
+            if (existingMCQ == null)
+            {
+                return AnswerResultSM.Other;
+            }
+            if(string.IsNullOrEmpty(mcq.Answer))
+            {
+                return AnswerResultSM.NotAttempted;  
+            }
+
+            if(existingMCQ.Answer == mcq.Answer)
+            {
+                return AnswerResultSM.Right;
+            }
+            return AnswerResultSM.Wrong;
+        }
+          
+        public async Task<UserTestDetailsSM> GetUserTestById(int userTestId)
+        {
+            var dm = await _context.UserTestDetails.FindAsync(userTestId);
+            if (dm == null) { return null; }
+
+            return _mapper.Map<UserTestDetailsSM>(dm);
+        }
+
+        public async Task<UserTestDetailsSM> GetTestResults(MockTestQuestionsSM objSM)
+        {
+            // 1️⃣ Validate test record
+            var existingUserTest = await _context.UserTestDetails
+                .FirstOrDefaultAsync(t => t.Id == objSM.UserTestId);
+
+            if (existingUserTest == null)
+                throw new AppException("User test not found", HttpStatusCode.NotFound);
+
+            if (objSM.Questions.Count == 0)
+                throw new AppException("No answers submitted", HttpStatusCode.BadRequest);
+
+            if (objSM.Questions.Count != existingUserTest.TotalQuestions)
+                throw new AppException("Malformed submission: question count mismatch", HttpStatusCode.BadRequest);
+
+            // 2️⃣ Calculate results
+            int rightAnswers = 0, wrongAnswers = 0, notAttempted = 0;
+
+            foreach (var mcq in objSM.Questions)
+            {
+                var result = await IsCorrectAnswer(mcq); // returns Right/Wrong/NotAttempted
+                switch (result)
+                {
+                    case AnswerResultSM.Right:
+                        rightAnswers++;
+                        break;
+                    case AnswerResultSM.Wrong:
+                        wrongAnswers++;
+                        break;
+                    case AnswerResultSM.NotAttempted:
+                        notAttempted++;
+                        break;
+                    default:
+                         
+                        break;
+                }
+            }
+
+            string LoginId = _tokenHelper.GetLoginIdFromToken();
+            // 3️⃣ Update test record
+            existingUserTest.RightAnswered = rightAnswers;
+            existingUserTest.WrongAnswered = wrongAnswers;
+            existingUserTest.NotAttempted = notAttempted;
+            existingUserTest.TestSubmitted = true;  
+            existingUserTest.LastModifiedBy = LoginId; 
+            existingUserTest.LastModifiedOnUtc = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            // 4️⃣ Map back to SM
+            return _mapper.Map<UserTestDetailsSM>(existingUserTest);
         }
 
 

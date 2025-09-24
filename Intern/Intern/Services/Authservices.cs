@@ -79,7 +79,11 @@ namespace Intern.Services
           
             var user = _mapper.Map<ClientUserDM>(signUpSM);
             user.Password = _passwordHelper.HashPassword(signUpSM.Password);
-            user.LoginId = signUpSM.Email;
+            int atIndex = signUpSM.Email.IndexOf('@');
+            user.LoginId = atIndex > 0
+                ? signUpSM.Email.Substring(0, atIndex).ToLower()
+                : signUpSM.Email.ToLower();
+            //user.LoginId = signUpSM.Email;
             user.IsActive = true;
             user.IsEmailConfirmed = false;
             user.IsMobileNumberConfirmed = false;
@@ -354,7 +358,10 @@ namespace Intern.Services
                     {
                         Email = email,
                         Name = payload.Name,
-                        LoginId = email,
+                        // LoginId = email,
+                        LoginId = !string.IsNullOrEmpty(email) && email.Contains("@")
+                              ? email[..email.IndexOf('@')].ToLower()
+                              : email.ToLower(),
                         Role = UserRoleDM.ClientEmployee,
                         IsEmailConfirmed = true,
                         Password = null,

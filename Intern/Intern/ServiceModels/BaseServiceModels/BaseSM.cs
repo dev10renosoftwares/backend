@@ -4,7 +4,7 @@ namespace Intern.ServiceModels.BaseServiceModels
 {
     public class BaseSM
     {
-        public int? Id { get; set; }
+        public int Id { get; set; }
         public DateTime CreatedOnUtc { get; set; }
 
         public string? CreatedBy { get; set; }

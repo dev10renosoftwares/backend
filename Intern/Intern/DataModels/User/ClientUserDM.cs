@@ -7,6 +7,8 @@
         public bool IsMobileNumberConfirmed { get; set; } = false;
         public bool IsActive { get; set; } = true;
         public ICollection<ExternalUserDM> ExternalUsers { get; set; }
+        public ICollection<UserTestDetailsDM> UserTestDetails { get; set; }
+
     }
 }
 

@@ -11,7 +11,7 @@ namespace Intern.ServiceModels.Exams
         public string OptionC { get; set; }
         public string OptionD { get; set; }
 
-        public string Answer { get; set; }
+        public string? Answer { get; set; }
 
         public string? Explanation { get; set; }
     }

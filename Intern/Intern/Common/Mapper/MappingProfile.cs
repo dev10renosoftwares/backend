@@ -43,6 +43,7 @@ namespace Intern.Common.Mapper
 
                      // **Add this mapping for your GetAllAsync / GetByIdAsync**
                      CreateMap<DepartmentDM, DepartmentSM>().ReverseMap();
+                     CreateMap<UserTestDetailsSM, UserTestDetailsDM>().ReverseMap();
 
 
                      // ✅ Post mappings

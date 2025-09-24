@@ -35,6 +35,8 @@ namespace Intern.Data
         public DbSet<MCQPostSubjectDM> MCQPostSubjects { get; set; }
         public DbSet<NotificationsDM> Notifications { get; set; }
 
+        public DbSet<UserTestDetailsDM> UserTestDetails { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -101,6 +103,28 @@ namespace Intern.Data
                 .WithMany(p => p.MCQPostSubjects)
                 .HasForeignKey(mps => mps.PostId)
                 .OnDelete(DeleteBehavior.Cascade); // Post → MCQPostSubjectDM
+
+
+            // -------------------------
+            // UserTestDetailsDM Config
+            // -------------------------
+            modelBuilder.Entity<UserTestDetailsDM>()
+                .HasOne(ut => ut.User)
+                .WithMany(u => u.UserTestDetails)
+                .HasForeignKey(ut => ut.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserTestDetailsDM>()
+                .HasOne(ut => ut.Post)
+                .WithMany(p => p.UserTestDetails)
+                .HasForeignKey(ut => ut.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserTestDetailsDM>()
+                .HasOne(ut => ut.Subject)
+                .WithMany(s => s.UserTestDetails)
+                .HasForeignKey(ut => ut.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

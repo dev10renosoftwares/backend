@@ -13,6 +13,7 @@ namespace Intern.Common.Helpers
         private const string UserIdClaim = "UserId";
         private const string EmailClaim = "Email";
         private const string RoleClaim = "Role";
+        private const string LoginIdClaim = "LoginId";
 
         public TokenHelper(IHttpContextAccessor contextAccessor)
         {
@@ -22,6 +23,7 @@ namespace Intern.Common.Helpers
         public int? GetUserIdFromToken() => GetIntClaimFromToken(UserIdClaim);
         public string? GetEmailFromToken() => GetStringClaimFromToken(EmailClaim);
         public int? GetRoleFromToken() => GetIntClaimFromToken(RoleClaim);
+        public string? GetLoginIdFromToken() => GetStringClaimFromToken(LoginIdClaim);
 
         private int? GetIntClaimFromToken(string claimType)
         {
