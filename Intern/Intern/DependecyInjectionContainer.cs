@@ -27,6 +27,7 @@ namespace Intern.DependencyInjection
             services.AddScoped<MCQService>();
             services.AddScoped<NotificationService>();
             services.AddScoped<UserService>();
+            services.AddScoped<SubjectService>();
             services.AddScoped<ImageHelper>();
             services.AddScoped<PasswordHelper>();
             services.AddScoped<TokenHelper>();

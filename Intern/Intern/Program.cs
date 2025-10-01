@@ -54,6 +54,8 @@ builder.Services.AddScoped<EncryptionHelper>(sp =>
 });
 builder.Services.Configure<AuthSettings>(
     builder.Configuration.GetSection("AuthSettings"));
+builder.Services.Configure<ExamConfig>(builder.Configuration.GetSection("ExamConfig"));
+
 
 
 builder.Services.AddControllers();

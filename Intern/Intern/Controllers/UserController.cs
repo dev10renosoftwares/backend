@@ -25,21 +25,21 @@ namespace Intern.Controllers
 
         [HttpGet("{id}")]
 
-        public async Task<ApiResponse<ClientUserSM>> GetById(int id)
+        public async Task<ApiResponse<UserPerformanceSM>> GetById(int id)
         {
             //var userId = _tokenHelper.GetUserIdFromToken();
             var user = await _userService.GetByIdAsync(id);
 
-            return ApiResponse<ClientUserSM>.SuccessResponse(user, "Post fetched successfully");
+            return ApiResponse<UserPerformanceSM>.SuccessResponse(user, "User fetched successfully");
         }
+
+
 
         [HttpPut("{id}")]
         public async Task<ApiResponse<ClientUserSM>> Update(int id, [FromBody] ClientUserSM updatedUser)
         {
             if (updatedUser == null || id <= 0)
-                return ApiResponse<ClientUserSM>.ErrorResponse("Post not found");
-
-         
+                return ApiResponse<ClientUserSM>.ErrorResponse("User not found");
 
             var result = await _userService.UpdateAsync(id, updatedUser);
             return ApiResponse<ClientUserSM>.SuccessResponse(result, "User updated successfully");

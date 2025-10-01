@@ -9,5 +9,7 @@
     public class ExamConfig
     {
         public int MaxTestsPerUser { get; set; }
+
+        public double NegativeMarkPerQuestion { get; set; }
     }
 }

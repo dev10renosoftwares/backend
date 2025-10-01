@@ -23,15 +23,17 @@ namespace Intern.Services
         private readonly PostService _postSevice;        
         private readonly DepartmentService _deptService;
         private readonly TokenHelper _tokenHelper;
+        private readonly SubjectService _subjectService;
         private readonly ExamConfig _examConfig;
 
-        public MCQService(ApiDbContext context,IMapper mapper, PostService postService, DepartmentService deptService,TokenHelper tokenHelper, IOptions<ExamConfig> examConfig)
+        public MCQService(ApiDbContext context,IMapper mapper, PostService postService, DepartmentService deptService,TokenHelper tokenHelper, IOptions<ExamConfig> examConfig,SubjectService subjectService)
         {
             _context = context;
             _mapper = mapper;
             _postSevice = postService;
             _deptService = deptService;
             _tokenHelper = tokenHelper;
+            _subjectService = subjectService;
             _examConfig = examConfig.Value;
         }
 
@@ -89,12 +91,13 @@ namespace Intern.Services
             }
 
             // ✅ Begin transaction
+            var loginId = _tokenHelper.GetLoginIdFromToken();
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 foreach (var sm in objSM)
                 {
-                    sm.CreatedBy = "null user";
+                    sm.CreatedBy = loginId;
                     var added = await CreateAsync(sm);  
                     if (added != null)
                     {
@@ -126,6 +129,63 @@ namespace Intern.Services
                 throw e;
             }
         }
+
+        public async Task<string> AddMcqsToSubject(int subjectId, List<MCQsSM> objSM)
+        {
+            var existingSubject = await _subjectService.GetByIdAsync(subjectId);
+            if (existingSubject == null)
+            {
+                throw new AppException("Cannot add MCQ as Subject Id is not found");
+            }
+
+            if (objSM == null || objSM.Count == 0)
+            {
+                throw new AppException("MCQs not found");
+            }
+
+            var loginId = _tokenHelper.GetLoginIdFromToken();
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                foreach (var sm in objSM)
+                {
+                    sm.CreatedBy = loginId;
+                    var added = await CreateAsync(sm);
+
+                    if (added != null)
+                    {
+                        // ✅ Check if MCQ already linked to Subject
+                        var existingRelation = await _context.MCQPostSubjects
+                            .FirstOrDefaultAsync(x => x.MCQId == added.Id && x.SubjectId == subjectId);
+
+                        if (existingRelation != null)
+                        {
+                            continue;
+                        }
+
+                        // ✅ Create relation with Subject
+                        var mcqSubject = new MCQPostSubjectDM
+                        {
+                            MCQId = added.Id,
+                            SubjectId = subjectId,
+                            MCQType = McqTypeDM.Subject
+                        };
+
+                        await _context.MCQPostSubjects.AddAsync(mcqSubject);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                await transaction.CommitAsync();
+                return "true";
+            }
+            catch (Exception e)
+            {
+                await transaction.RollbackAsync();
+                throw e;
+            }
+        }
+
 
         public async Task<string> UpdateAsync(MCQsSM updatedMcq)
         {
@@ -256,7 +316,7 @@ namespace Intern.Services
             int userTestCount = await _context.UserTestDetails
                 .CountAsync(t => t.UserId == userId);
 
-            if (userTestCount > _examConfig.MaxTestsPerUser)
+            if (userTestCount >= _examConfig.MaxTestsPerUser)
                 throw new AppException(
                     $"You cannot attempt more than {_examConfig.MaxTestsPerUser} tests.",
                     HttpStatusCode.Forbidden

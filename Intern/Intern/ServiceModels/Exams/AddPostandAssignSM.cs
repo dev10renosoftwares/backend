@@ -3,9 +3,7 @@
 namespace Intern.ServiceModels.Exams
 {
    
-
-        public class 
-        AddPostandAssignSM
+        public class AddPostandAssignSM
         {
             [Required(ErrorMessage = "Post name is required.")]
            

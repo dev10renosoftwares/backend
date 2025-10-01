@@ -37,6 +37,11 @@ namespace Intern.ServiceModels
 
         public bool IsEmailConfirmed { get; set; } 
 
-        public bool IsMobileNumberConfirmed { get; set; } 
+        public bool IsMobileNumberConfirmed { get; set; }
+
+
+       
+
+
     }
 }

@@ -63,6 +63,15 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(result, "MCQs Added Successfully");
         }
 
+        [Authorize(Roles = "SystemAdmin")]
+        [HttpPost("subject/{id}")]
+        public async Task<ApiResponse<string>> CreateMCQForSubject(int id, [FromBody] List<MCQsSM> addmcqs)
+        {
+            var result = await _mCQService.AddMcqsToSubject(id, addmcqs);
+            return ApiResponse<string>.SuccessResponse(result, "MCQs Added Successfully to Subject");
+        }
+
+
         [HttpPut("{id}")]
         public async Task<ApiResponse<string>> Update(int id, [FromBody] MCQsSM model)  
         {
@@ -119,6 +128,7 @@ namespace Intern.Controllers
 
             return ApiResponse<UserTestDetailsSM>.SuccessResponse(result, "MCQs Result fetched successfully");
         }
+
 
 
 

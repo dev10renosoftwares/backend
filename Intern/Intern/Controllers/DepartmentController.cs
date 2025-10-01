@@ -86,7 +86,10 @@ namespace Intern.Controllers
 
         public async Task<ApiResponse<string>> RemovepostsfromDepartment([FromBody] RemovepostsfromDepartmentSM removepostsfromDepartment)
         {
-            await _service.RemovepostsfromDepartmentAsync(removepostsfromDepartment);
+          var success =  await _service.RemovepostsfromDepartmentAsync(removepostsfromDepartment);
+            if (!success)
+                return ApiResponse<string>.ErrorResponse("Failed to remove subject from post");
+
             return ApiResponse<string>.SuccessResponse(null, "Post removed from Department Successfully");
         }
 

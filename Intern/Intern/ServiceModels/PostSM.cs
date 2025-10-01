@@ -13,8 +13,5 @@ namespace Intern.ServiceModels
         public string? NotificationNumber { get; set; }
 
     }
-
-   
-
-    
+  
 }
