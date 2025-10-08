@@ -201,7 +201,8 @@ namespace Intern.Services
                     var deptPosts = new[]
                     {
                 new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Revenue").Id, PostId = posts.First(p => p.PostName == "Junior Assistant").Id, NotificationNumber = "REV-001", PostDate = DateTime.UtcNow },
-                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Revenue").Id, PostId = posts.First(p => p.PostName == "Patwari").Id, NotificationNumber = "REV-002", PostDate = DateTime.UtcNow },
+                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Revenue").Id, PostId = posts.First(p => p.PostName == "Patwari").Id, NotificationNumber = "REV-002", PostDate = DateTime.Now.AddMonths(6) },
+                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Revenue").Id, PostId = posts.First(p => p.PostName == "Naib Tehsildar").Id, NotificationNumber = "REV-003",PostDate = DateTime.Now.AddMonths(6)},
                 new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Revenue").Id, PostId = posts.First(p => p.PostName == "Naib Tehsildar").Id, NotificationNumber = "REV-003",PostDate = DateTime.UtcNow},
 
                // ----------------- Health & Medical -----------------
@@ -211,7 +212,7 @@ namespace Intern.Services
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Health & Medical").Id, PostId = posts.First(p => p.PostName == "Lab Technician").Id, NotificationNumber = "HLT-004", PostDate = DateTime.UtcNow },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Health & Medical").Id, PostId = posts.First(p => p.PostName == "MPHW").Id, NotificationNumber = "HLT-005", PostDate = DateTime.UtcNow },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Health & Medical").Id, PostId = posts.First(p => p.PostName == "Nursing Aid").Id, NotificationNumber = "HLT-006", PostDate = DateTime.UtcNow },
-               new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Health & Medical").Id, PostId = posts.First(p => p.PostName == "ECG Technician").Id, NotificationNumber = "HLT-007", PostDate = DateTime.UtcNow },
+               new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Health & Medical").Id, PostId = posts.First(p => p.PostName == "ECG Technician").Id, NotificationNumber = "HLT-007",PostDate = DateTime.Now.AddMonths(6) },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Health & Medical").Id, PostId = posts.First(p => p.PostName == "Junior Lab Technician").Id, NotificationNumber = "HLT-008", PostDate = DateTime.UtcNow },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Health & Medical").Id, PostId = posts.First(p => p.PostName == "Junior Health Inspector").Id, NotificationNumber = "HLT-009", PostDate = DateTime.UtcNow },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Health & Medical").Id, PostId = posts.First(p => p.PostName == "Junior Dental Technician").Id, NotificationNumber = "HLT-010", PostDate = DateTime.UtcNow },
@@ -227,7 +228,7 @@ namespace Intern.Services
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Law and Justice").Id, PostId = posts.First(p => p.PostName == "Junior Legal Assistant").Id, NotificationNumber = "LAW-003", PostDate = DateTime.UtcNow },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Law and Justice").Id, PostId = posts.First(p => p.PostName == "Reader").Id, NotificationNumber = "LAW-004", PostDate = DateTime.UtcNow },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Law and Justice").Id, PostId = posts.First(p => p.PostName == "Urdu Typist").Id, NotificationNumber = "LAW-005", PostDate = DateTime.UtcNow },
-               new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Law and Justice").Id, PostId = posts.First(p => p.PostName == "Judgement Writer").Id, NotificationNumber = "LAW-006", PostDate = DateTime.UtcNow },
+               new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Law and Justice").Id, PostId = posts.First(p => p.PostName == "Judgement Writer").Id, NotificationNumber = "LAW-006", PostDate = DateTime.Now.AddMonths(6) },
                
                // ----------------- Agriculture and Skill Development -----------------
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Agriculture and Skill Development").Id, PostId = posts.First(p => p.PostName == "Agriculture Extension Assistant").Id, NotificationNumber = "AGR-001", PostDate = DateTime.UtcNow },
@@ -239,7 +240,7 @@ namespace Intern.Services
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Agriculture and Skill Development").Id, PostId = posts.First(p => p.PostName == "Soil Conservation Assistant").Id, NotificationNumber = "AGR-007", PostDate = DateTime.UtcNow },
                
                // ----------------- Education Development -----------------
-               new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Education Development").Id, PostId = posts.First(p => p.PostName == "Junior Librarian").Id, NotificationNumber = "EDU-001", PostDate = DateTime.UtcNow },
+               new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Education Development").Id, PostId = posts.First(p => p.PostName == "Junior Librarian").Id, NotificationNumber = "EDU-001", PostDate = DateTime.Now.AddMonths(6) },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Education Development").Id, PostId = posts.First(p => p.PostName == "Studio Assistant").Id, NotificationNumber = "EDU-002", PostDate = DateTime.UtcNow },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Education Development").Id, PostId = posts.First(p => p.PostName == "Kitabat Instructor").Id, NotificationNumber = "EDU-003", PostDate = DateTime.UtcNow },
                
@@ -259,7 +260,7 @@ namespace Intern.Services
                // ----------------- Forest and Environment -----------------
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Forest and Environment").Id, PostId = posts.First(p => p.PostName == "Forester").Id, NotificationNumber = "FOR-001", PostDate = DateTime.UtcNow },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Forest and Environment").Id, PostId = posts.First(p => p.PostName == "Wildlife Guard").Id, NotificationNumber = "FOR-002", PostDate = DateTime.UtcNow },
-               new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Forest and Environment").Id, PostId = posts.First(p => p.PostName == "Forest Guard").Id, NotificationNumber = "FOR-003", PostDate = DateTime.UtcNow },
+               new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Forest and Environment").Id, PostId = posts.First(p => p.PostName == "Forest Guard").Id, NotificationNumber = "FOR-003", PostDate = DateTime.Now.AddMonths(6)},
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Forest and Environment").Id, PostId = posts.First(p => p.PostName == "Draftsman").Id, NotificationNumber = "FOR-004", PostDate = DateTime.UtcNow },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Forest and Environment").Id, PostId = posts.First(p => p.PostName == "Assistant Information Officer").Id, NotificationNumber = "FOR-005", PostDate = DateTime.UtcNow },
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Forest and Environment").Id, PostId = posts.First(p => p.PostName == "Lab Assistant").Id, NotificationNumber = "FOR-006", PostDate = DateTime.UtcNow },
@@ -271,7 +272,7 @@ namespace Intern.Services
                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Forest and Environment").Id, PostId = posts.First(p => p.PostName == "Field Inspector").Id, NotificationNumber = "FOR-012", PostDate = DateTime.UtcNow },
                
                // ----------------- IT -----------------
-               new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "IT").Id, PostId = posts.First(p => p.PostName == "Computer Assistant").Id, NotificationNumber = "IT-001", PostDate = DateTime.UtcNow }
+               new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "IT").Id, PostId = posts.First(p => p.PostName == "Computer Assistant").Id, NotificationNumber = "IT-001", PostDate = DateTime.Now.AddMonths(6) }
 };
                     await _context.DepartmentPosts.AddRangeAsync(deptPosts);
                     await _context.SaveChangesAsync();
@@ -340,7 +341,7 @@ namespace Intern.Services
                 #region MCQs
 
                 var mcqs = new List<MCQsDM>
-            {
+             {
                 new(){
                     Question = "Who is the current Lieutenant Governor of Jammu & Kashmir (as of 2025)?",
                     OptionA = "Satya Pal Malik",
@@ -4240,6 +4241,166 @@ new(){
                 await _context.SaveChangesAsync();
 
                 #endregion MCQs
+
+
+                #region Notifications
+
+                var notifications = new List<NotificationsDM>
+{
+    new()
+    {
+        Title = "Advertisement Notification No. 01 of 2025 – Junior Assistant",
+        Message = "The JKSSB invites online applications for the post of Junior Assistant under Advertisement Notification No. 01 of 2025.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.ExamUpdate,
+        DepartmentId = 1,
+        PostId = 1,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    },
+    new()
+    {
+        Title = "Advertisement Notification No. 02 of 2025 – Patwari",
+        Message = "The JKSSB invites online applications for the post of Patwari under Advertisement Notification No. 02 of 2025.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.ExamUpdate,
+        DepartmentId = 1,
+        PostId = 2,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    },
+    new()
+    {
+        Title = "Advertisement Notification No. 03 of 2025 – Naib Tehsildar",
+        Message = "The JKSSB invites online applications for the post of Naib Tehsildar under Advertisement Notification No. 03 of 2025.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.ExamUpdate,
+        DepartmentId = 1,
+        PostId = 3,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    },
+    new()
+    {
+        Title = "Revised Examination Schedule – Junior Assistant",
+        Message = "The JKSSB has revised the examination schedule for the Junior Assistant post. Candidates are advised to check the official website for updated dates.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.ExamUpdate,
+        DepartmentId = 1,
+        PostId = 1,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    },
+    new()
+    {
+        Title = "Revised Examination Schedule – Patwari",
+        Message = "The JKSSB has revised the examination schedule for the Patwari post. Candidates are advised to check the official website for updated dates.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.ExamUpdate,
+        DepartmentId = 1,
+        PostId = 2,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    },
+    new()
+    {
+        Title = "Revised Examination Schedule – Naib Tehsildar",
+        Message = "The JKSSB has revised the examination schedule for the Naib Tehsildar post. Candidates are advised to check the official website for updated dates.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.ExamUpdate,
+        DepartmentId = 1,
+        PostId = 3,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    },
+    new()
+    {
+        Title = "Admit Card Release – Junior Assistant",
+        Message = "The JKSSB has released the admit cards for the Junior Assistant examination. Candidates can download their admit cards from the official website.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.AdmitCard,
+        DepartmentId = 1,
+        PostId = 1,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    },
+    new()
+    {
+        Title = "Admit Card Release – Patwari",
+        Message = "The JKSSB has released the admit cards for the Patwari examination. Candidates can download their admit cards from the official website.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.AdmitCard,
+        DepartmentId = 1,
+        PostId = 2,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    },
+    new()
+    {
+        Title = "Admit Card Release – Naib Tehsildar",
+        Message = "The JKSSB has released the admit cards for the Naib Tehsildar examination. Candidates can download their admit cards from the official website.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.AdmitCard,
+        DepartmentId = 1,
+        PostId = 3,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    },
+    new()
+    {
+        Title = "Result Declaration – Junior Assistant",
+        Message = "The JKSSB has declared the result for the Junior Assistant examination. Candidates can check their results on the official website.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.Result,
+        DepartmentId = 1,
+        PostId = 1,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    },
+    new()
+    {
+        Title = "Result Declaration – Patwari",
+        Message = "The JKSSB has declared the result for the Patwari examination. Candidates can check their results on the official website.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.Result,
+        DepartmentId = 1,
+        PostId = 2,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    },
+    new()
+    {
+        Title = "Result Declaration – Naib Tehsildar",
+        Message = "The JKSSB has declared the result for the Naib Tehsildar examination. Candidates can check their results on the official website.",
+        NotificationType = DataModels.Enums.NotificationTypeDM.Result,
+        DepartmentId = 1,
+        PostId = 3,
+        CreatedOnUtc = DateTime.Now,
+        CreatedBy = "JKSSB",
+        LastModifiedOnUtc = DateTime.Now,
+        LastModifiedBy = "JKSSB"
+    }
+};
+
+                if (!_context.Notifications.Any())
+                {
+                    await  _context.Notifications.AddRangeAsync(notifications);
+                    await _context.SaveChangesAsync();
+                }
+
+                #endregion
+
 
                 #region Mcqs Assigning
 

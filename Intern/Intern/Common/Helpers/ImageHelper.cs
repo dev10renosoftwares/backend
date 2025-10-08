@@ -4,6 +4,7 @@
     {
 
         // Save base64 string as image file
+      
         public async Task<string> SaveBase64ImageAsync(string base64Image, string saveFolder)
         {
             if (string.IsNullOrEmpty(base64Image))
@@ -13,7 +14,17 @@
                 ? base64Image.Split(',')[1]
                 : base64Image;
 
-            byte[] imageBytes = Convert.FromBase64String(base64Data);
+            byte[] imageBytes;
+
+            try
+            {
+                imageBytes = Convert.FromBase64String(base64Data);
+            }
+            catch
+            {
+               
+                return null;
+            }
 
             if (!Directory.Exists(saveFolder))
                 Directory.CreateDirectory(saveFolder);
@@ -21,10 +32,18 @@
             var fileName = $"{Guid.NewGuid()}.jpg";
             var filePath = Path.Combine(saveFolder, fileName);
 
-            await File.WriteAllBytesAsync(filePath, imageBytes);
+            try
+            {
+                await File.WriteAllBytesAsync(filePath, imageBytes);
+            }
+            catch
+            {
+                return null;
+            }
 
             return filePath;
         }
+
 
         // ✅ Save image from URL (Google profile image, etc.)
         public async Task<string> SaveImageFromUrlAsync(string imageUrl, string saveFolder)

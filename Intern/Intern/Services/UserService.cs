@@ -17,13 +17,15 @@ namespace Intern.Services
         private readonly ApiDbContext _context;
         private readonly IMapper _mapper;
         private readonly ImageHelper _imageHelper;
+        private readonly TokenHelper _tokenHelper;
         private readonly ExamConfig _examConfig;
 
-        public UserService(ApiDbContext context, IMapper mapper,ImageHelper imageHelper,IOptions<ExamConfig> maxtests )
+        public UserService(ApiDbContext context, IMapper mapper,ImageHelper imageHelper,IOptions<ExamConfig> maxtests ,TokenHelper tokenHelper)
         {
             _context = context;
             _mapper = mapper;
             _imageHelper = imageHelper;
+            _tokenHelper = tokenHelper;
             _examConfig = maxtests.Value;
         }
 
@@ -117,6 +119,7 @@ namespace Intern.Services
 
         public async Task<ClientUserSM> UpdateAsync(int id, ClientUserSM objSM)
         {
+            var loginId = _tokenHelper.GetLoginIdFromToken();
             var userDM = await _context.ClientUsers.FindAsync(id);
             if (userDM == null)
             {
@@ -135,7 +138,7 @@ namespace Intern.Services
             userDM.IsActive = userDM.IsActive;
             userDM.IsMobileNumberConfirmed = userDM.IsMobileNumberConfirmed;
 
-            userDM.LastModifiedBy = "null user";
+            userDM.LastModifiedBy = loginId;
             userDM.LastModifiedOnUtc = DateTime.UtcNow;
 
             // ✅ Handle image
