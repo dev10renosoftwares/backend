@@ -11,7 +11,6 @@ namespace Intern.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [AllowAnonymous]
     public class SubjectController : ControllerBase
     {
         private readonly SubjectService _subjectService;
@@ -20,7 +19,7 @@ namespace Intern.Controllers
         {
             _subjectService = subjectService;
         }
-
+        [Authorize(Roles = "SuperAdmin,SystemAdmin")]
         [HttpGet]
         public async Task<ApiResponse<IEnumerable<SubjectSM>>> GetAll()
         {
@@ -28,6 +27,7 @@ namespace Intern.Controllers
             return ApiResponse<IEnumerable<SubjectSM>>.SuccessResponse(result, "All subjects fetched successfully");
         }
 
+        [Authorize(Roles = "SuperAdmin,SystemAdmin")]
         [HttpGet("{id}")]
         public async Task<ApiResponse<SubjectSM>> GetById(int id)
         {
@@ -38,7 +38,7 @@ namespace Intern.Controllers
             return ApiResponse<SubjectSM>.SuccessResponse(result, "Subject fetched successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost]
         public async Task<ApiResponse<string>> Create([FromBody] SubjectSM subject)
         {
@@ -46,17 +46,16 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Subject added successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
-        [HttpPut("{id}")]
-        //[HttpPut]
+
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpPut("{id}")] 
         public async Task<ApiResponse<string>> Update(int id, [FromBody] SubjectSM subject)
-        {
-            
+        { 
             var result = await _subjectService.UpdateAsync(id,subject);
             return ApiResponse<string>.SuccessResponse(null, result);
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpDelete("{id}")]
         public async Task<ApiResponse<string>> Delete(int id)
         {
@@ -67,7 +66,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Subject deleted successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost("create-and-assign-subject")]
         public async Task<ApiResponse<string>> CreateAndAssignSubject([FromBody] AddSubjectandAssignSM request)
         {
@@ -76,7 +75,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, result);
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpDelete("remove-subject/{subjectPostId}")]
         public async Task<ApiResponse<string>> RemoveSubjectFromPost(int subjectPostId)
         {
@@ -88,7 +87,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Subject removed from Post successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpGet("getall-subjects/{postId}")]
         public async Task<ApiResponse<PostSubjectsResponseSM>> GetSubjectsByPostId(int postId)
         {

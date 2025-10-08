@@ -2,8 +2,6 @@
 
 namespace Intern.Common.Helpers
 {
-   
-
     public class TokenHelper
     {
         private readonly IHttpContextAccessor _contextAccessor;
@@ -20,38 +18,53 @@ namespace Intern.Common.Helpers
             _contextAccessor = contextAccessor ?? throw new ArgumentNullException(nameof(contextAccessor));
         }
 
-        public int? GetUserIdFromToken() => GetIntClaimFromToken(UserIdClaim);
-        public string? GetEmailFromToken() => GetStringClaimFromToken(EmailClaim);
-        public int? GetRoleFromToken() => GetIntClaimFromToken(RoleClaim);
-        public string? GetLoginIdFromToken() => GetStringClaimFromToken(LoginIdClaim);
+        public int GetUserIdFromToken() => GetIntClaimFromToken(UserIdClaim);
+        public string GetEmailFromToken() => GetStringClaimFromToken(EmailClaim);
+        public int GetRoleFromToken() => GetIntClaimFromToken(RoleClaim);
+        public string GetLoginIdFromToken() => GetStringClaimFromToken(LoginIdClaim);
 
-        private int? GetIntClaimFromToken(string claimType)
+        private int GetIntClaimFromToken(string claimType)
         {
             var token = GetJwtToken();
-            if (token == null) return null;
+            var claimValue = token?.Claims.FirstOrDefault(c => c.Type == claimType)?.Value;
 
-            var claimValue = token.Claims.FirstOrDefault(c => c.Type == claimType)?.Value;
-            return int.TryParse(claimValue, out int result) ? result : null;
+            if (string.IsNullOrWhiteSpace(claimValue))
+                throw new InvalidOperationException($"Claim '{claimType}' is missing from token.");
+
+            if (!int.TryParse(claimValue, out int result))
+                throw new InvalidOperationException($"Claim '{claimType}' is not a valid integer.");
+
+            return result;
         }
 
-        private string? GetStringClaimFromToken(string claimType)
+        private string GetStringClaimFromToken(string claimType)
         {
             var token = GetJwtToken();
-            return token?.Claims.FirstOrDefault(c => c.Type == claimType)?.Value;
+            var claimValue = token?.Claims.FirstOrDefault(c => c.Type == claimType)?.Value;
+
+            if (string.IsNullOrWhiteSpace(claimValue))
+                throw new InvalidOperationException($"Claim '{claimType}' is missing from token.");
+
+            return claimValue;
         }
 
-        private JwtSecurityToken? GetJwtToken()
+        private JwtSecurityToken GetJwtToken()
         {
             var authHeader = _contextAccessor.HttpContext?.Request.Headers[AuthorizationHeader].ToString();
+
             if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith(BearerPrefix, StringComparison.OrdinalIgnoreCase))
-                return null;
+                throw new InvalidOperationException("Authorization header is missing or invalid.");
 
             var tokenStr = authHeader.Substring(BearerPrefix.Length).Trim();
             if (string.IsNullOrWhiteSpace(tokenStr) || tokenStr.Split('.').Length != 3)
-                return null;
+                throw new InvalidOperationException("JWT token format is invalid.");
 
             var handler = new JwtSecurityTokenHandler();
-            return handler.CanReadToken(tokenStr) ? handler.ReadToken(tokenStr) as JwtSecurityToken : null;
+            if (!handler.CanReadToken(tokenStr))
+                throw new InvalidOperationException("Invalid JWT token.");
+
+            return handler.ReadToken(tokenStr) as JwtSecurityToken
+                   ?? throw new InvalidOperationException("Unable to read JWT token.");
         }
     }
 }

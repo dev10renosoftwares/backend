@@ -96,11 +96,24 @@ namespace Intern.Services
             if (post == null)
                 throw new AppException($"Post with Id {request.PostId} not found.", HttpStatusCode.NotFound);
 
-            bool exists = await _context.Subjects
-                .AnyAsync(s => s.SubjectName.ToLower() == request.SubjectName.Trim().ToLower());
+            var exists = await _context.Subjects
+                .FirstOrDefaultAsync(s => s.SubjectName == request.SubjectName);
 
-            if (exists)
-                throw new AppException("A subject with the same name already exists.", HttpStatusCode.Conflict);
+            if (exists != null)
+            {
+                var dm = new SubjectPostDM
+                {
+                    PostId = request.PostId,
+                    SubjectId = exists.Id,
+
+                };
+
+                _context.SubjectPosts.Add(dm);
+                await _context.SaveChangesAsync();
+
+                return "Subject created and assigned successfully.";
+            }
+                
 
             var loginId = _tokenHelper.GetLoginIdFromToken();
             // Step 3: Map to SubjectDM
@@ -124,6 +137,7 @@ namespace Intern.Services
 
             return "Subject created and assigned successfully.";
         }
+
 
         public async Task<bool> RemoveSubjectsFromPostAsync(int subjectPostId)
         {
@@ -161,7 +175,7 @@ namespace Intern.Services
 
             if (postSubjects.Count == 0)
             {
-                return response; // return empty if no subjects
+                return response; 
             }
 
             var subjects = new List<PostSubjectRelationSM>();

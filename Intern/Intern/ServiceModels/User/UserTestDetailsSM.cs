@@ -6,7 +6,7 @@ namespace Intern.ServiceModels.User
     public class UserTestDetailsSM:BaseSM
     {
         public int UserId { get; set; }
-        public int PostId { get; set; }
+        public int? PostId { get; set; }
 
         public int? SubjectId { get; set; }
 

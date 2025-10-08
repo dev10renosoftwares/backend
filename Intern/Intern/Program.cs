@@ -9,6 +9,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.RegisterServices(builder.Configuration);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -102,7 +104,6 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddHttpContextAccessor();
 // 4. Register Services + Repositories
-builder.Services.RegisterServices(builder.Configuration);
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())

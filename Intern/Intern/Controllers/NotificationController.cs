@@ -20,7 +20,7 @@ namespace Intern.Controllers
         }
 
         #region GET ALL
-
+        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]
         [HttpGet]
         public async Task<ApiResponse<IEnumerable<NotificationsSM>>> GetAll(int skip = 0, int top = 10)
         {
@@ -28,6 +28,7 @@ namespace Intern.Controllers
             return ApiResponse<IEnumerable<NotificationsSM>>.SuccessResponse(result, "All notifications fetched successfully");
         }
 
+        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]
         [HttpGet("count")]
         public async Task<ApiResponse<int>> GetAllCount()
         {
@@ -35,6 +36,8 @@ namespace Intern.Controllers
             return ApiResponse<int>.SuccessResponse(count, "Total notification count fetched successfully");
         }
 
+
+        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]
         [HttpGet("by-dept-post")]
         public async Task<ApiResponse<IEnumerable<NotificationsSM>>> GetByDeptPost(int deptId, int postId, int skip = 0, int top = 10)
         {
@@ -42,6 +45,7 @@ namespace Intern.Controllers
             return ApiResponse<IEnumerable<NotificationsSM>>.SuccessResponse(result, "Notifications of department post fetched successfully");
         }
 
+        [Authorize(Roles = "SuperAdmin,SystemAdmim")]
         [HttpGet("by-dept-post/count")]
         public async Task<ApiResponse<int>> GetByDeptPostCount(int deptId, int postId)
         {
@@ -52,7 +56,7 @@ namespace Intern.Controllers
         #endregion GET ALL
 
         #region GET SINGLE
-
+        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]
         [HttpGet("{id}")]
         public async Task<ApiResponse<NotificationsSM>> GetById(int id)
         {
@@ -67,7 +71,7 @@ namespace Intern.Controllers
 
         #region POST
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost()]
         public async Task<ApiResponse<NotificationsSM>> PostNotification([FromBody] NotificationsSM objSM)
         {
@@ -82,7 +86,7 @@ namespace Intern.Controllers
 
         #region UPDATE
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPut("{id}")]
         public async Task<ApiResponse<NotificationsSM>> Update(int id, [FromBody] NotificationsSM objSM)
         {
@@ -97,7 +101,7 @@ namespace Intern.Controllers
 
         #region DELETE
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpDelete("{id}")]
         public async Task<ApiResponse<string>> Delete(int id)
         {

@@ -29,7 +29,7 @@ namespace Intern.Controllers
             _tokenHelper = tokenHelper;
             _context = context;
         }
-
+        [Authorize(Roles = "SuperAdmin,SystemAdmin")]
         [HttpGet]
         public async Task<ApiResponse<IEnumerable<MCQsSM>>> GetAll()
         {
@@ -37,6 +37,7 @@ namespace Intern.Controllers
             return ApiResponse<IEnumerable<MCQsSM>>.SuccessResponse(result, "All MCQs  fetched successfully");
         }
 
+        [Authorize(Roles = "SuperAdmin,SystemAdmin")]
         [HttpGet("{id}")]
         public async Task<ApiResponse<MCQsSM>> GetById(int id)
         {
@@ -47,6 +48,7 @@ namespace Intern.Controllers
             return ApiResponse<MCQsSM>.SuccessResponse(result, "MCQ fetched successfully");
         }
 
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost]
         public async Task<ApiResponse<MCQsSM>> Create([FromBody] MCQsSM addmcqs)
         {
@@ -55,6 +57,7 @@ namespace Intern.Controllers
             return ApiResponse<MCQsSM>.SuccessResponse(result, "MCQ Added Successfully");
         }
 
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost("post/{id}")]
         public async Task<ApiResponse<string>> CreateMCQForPost(int id, [FromBody] List<MCQsSM> addmcqs)
         {
@@ -63,7 +66,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(result, "MCQs Added Successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost("subject/{id}")]
         public async Task<ApiResponse<string>> CreateMCQForSubject(int id, [FromBody] List<MCQsSM> addmcqs)
         {
@@ -71,7 +74,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(result, "MCQs Added Successfully to Subject");
         }
 
-
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPut("{id}")]
         public async Task<ApiResponse<string>> Update(int id, [FromBody] MCQsSM model)  
         {
@@ -80,7 +83,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "MCQ updated successfully");
         }
 
-
+        [Authorize(Roles = "SuperAdmin")]
         [HttpDelete("{id}")]
         public async Task<ApiResponse<string>> Delete(int id)
         {
@@ -91,7 +94,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "MCQ deleted successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost("assign-mcq")]
         public async Task<ApiResponse<string>> AssignMCQToSubjectOrPost([FromBody] MCQSubjectPostSM request)
         {
@@ -100,18 +103,17 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "MCQ assigned successfully");
         }
 
+        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]
         [HttpGet("get-mcqs")]
-        [Authorize]
         public async Task<ApiResponse<MockTestQuestionsSM>> GetAllMCQs(int postId, int departmentId)
         {
-            var userId = _tokenHelper.GetUserIdFromToken();
-            var result = await _mCQService.GetMCQsByDepartmentAndPostAsync(userId.Value, departmentId, postId);
+            int userId = _tokenHelper.GetUserIdFromToken();
+            var result = await _mCQService.GetMCQsByDepartmentAndPostAsync(userId, departmentId, postId);
             return ApiResponse<MockTestQuestionsSM>.SuccessResponse(result, "MCQs fetched successfully");
         }
 
-
+        [Authorize(Roles = "ClientEmployee")]
         [HttpPost("results")]
-        [Authorize]
         public async Task<ApiResponse<UserTestDetailsSM>> GetTestResults([FromBody] MockTestQuestionsSM answers)
         {
             var userId = _tokenHelper.GetUserIdFromToken();
@@ -128,6 +130,16 @@ namespace Intern.Controllers
 
             return ApiResponse<UserTestDetailsSM>.SuccessResponse(result, "MCQs Result fetched successfully");
         }
+
+        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]
+        [HttpGet("get-mcqs/{subjectId}")]
+        public async Task<ApiResponse<MockTestQuestionsSM>> GetMCQsBySubject(int subjectId)
+        {
+            int userId = _tokenHelper.GetUserIdFromToken(); ; 
+            var result = await _mCQService.GetMCQsBySubjectAsync(userId, subjectId);
+            return ApiResponse<MockTestQuestionsSM>.SuccessResponse(result, "MCQs fetched successfully");
+        }
+
 
 
 

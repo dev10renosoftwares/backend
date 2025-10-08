@@ -21,6 +21,8 @@ namespace Intern.Controllers
         {
             _postService = postService;
         }
+
+        [Authorize(Roles = "SuperAdmin,SystemAdmin")]
         [HttpGet]
         public async Task<ApiResponse<IEnumerable<PostSM>>> GetAll()
         {
@@ -28,6 +30,7 @@ namespace Intern.Controllers
             return ApiResponse<IEnumerable<PostSM>>.SuccessResponse(result, "All Posts fetched successfully");
         }
 
+        [Authorize(Roles = "SuperAdmin,SystemAdmin")]
         [HttpGet("{id}")]
         public async Task<ApiResponse<PostSM>> GetById(int id)
         {
@@ -38,8 +41,8 @@ namespace Intern.Controllers
             return ApiResponse<PostSM>.SuccessResponse(result, "Post fetched successfully");
         }
 
-        [AllowAnonymous]
-        [Authorize(Roles = "SystemAdmin")]
+       
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost]
         public async Task<ApiResponse<string>> Create([FromBody] PostSM addPostSM)
         {
@@ -47,9 +50,8 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Post added successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
-        [HttpPut]
-        
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpPut]        
         public async Task<ApiResponse<string>> UpdatePost( int? departmentPostId, [FromBody] PostSM postsm)
         {
             var result = await _postService.UpdatePostAsync( departmentPostId, postsm);
@@ -57,7 +59,7 @@ namespace Intern.Controllers
         }
 
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpDelete("{id}")]
         public async Task<ApiResponse<string>> Delete(int id)
         {
@@ -68,8 +70,8 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Post deleted successfully");
         }
 
-       
-        [Authorize(Roles = "SystemAdmin")]
+
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost("create-and-assign-post")]
         public async Task<ApiResponse<string>> CreateAndAssignPost([FromBody] AddPostandAssignSM request)
         {

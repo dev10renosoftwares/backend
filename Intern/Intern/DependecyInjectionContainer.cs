@@ -12,8 +12,7 @@ namespace Intern.DependencyInjection
         public static void RegisterServices(this IServiceCollection services, IConfiguration configuration)
         {
             // Register DbContext
-            services.AddDbContext<ApiDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            //services.AddDbContext<ApiDbContext>(options =>options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             // Register AutoMapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -31,6 +30,7 @@ namespace Intern.DependencyInjection
             services.AddScoped<ImageHelper>();
             services.AddScoped<PasswordHelper>();
             services.AddScoped<TokenHelper>();
+            services.AddScoped<DatabaseProcess>();
            
             
         }

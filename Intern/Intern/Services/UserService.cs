@@ -39,52 +39,11 @@ namespace Intern.Services
                 if (!string.IsNullOrEmpty(clientUser.ImagePath))
                 {
                     // convert image path to base64
-                    sm.ImageBase64 = _imageHelper.ConvertFileToBase64(clientUser.ImagePath) ;
+                    sm.ImageBase64 = _imageHelper.ConvertFileToBase64(clientUser.ImagePath);
                 }
                 sm.UserName = clientUser.LoginId;
                 sm.Password = null;
 
-
-                // =============================
-                // Fetch user test performance
-                // =============================
-                //var takenTests = await _context.UserTestDetails
-                //        .Where(t => t.UserId == clientUser.Id && t.TestTaken)   
-                //        .ToListAsync();
-
-                //var submittedTests = takenTests
-                //    .Where(t => t.TestSubmitted)  
-                //    .ToList();
-
-                //int maxTests = _examConfig.MaxTestsPerUser;
-
-                //if (takenTests.Any())
-                //{
-                //    sm.TotalTestsTaken = takenTests.Count;
-                //    sm.TotalRemainingTests = maxTests - sm.TotalTestsTaken;
-
-                //    if (submittedTests.Any())
-                //    {
-                //        sm.AverageMarks = submittedTests.Average(
-                //            t => (double)t.RightAnswered / t.TotalQuestions * 100
-                //        );
-                //        sm.TopPerformance = submittedTests.Max(
-                //            t => (double)t.RightAnswered / t.TotalQuestions * 100
-                //        );
-                //    }
-                //    else
-                //    {
-                //        sm.AverageMarks = 0;
-                //        sm.TopPerformance = 0;
-                //    }
-                //}
-                //else
-                //{
-                //    sm.TotalTestsTaken = 0;
-                //    sm.TotalRemainingTests = maxTests;
-                //    sm.AverageMarks = 0;
-                //    sm.TopPerformance = 0;
-                //}
                 // =============================
                 // Fetch user test performance
                 // =============================
@@ -108,7 +67,7 @@ namespace Intern.Services
                         {
                             double positiveMarks = (double)t.RightAnswered / t.TotalQuestions * 100;
                             double negativeMarks = (double)t.WrongAnswered * _examConfig.NegativeMarkPerQuestion;
-                            double totalMarks = Math.Max(positiveMarks - negativeMarks, 0); 
+                            double totalMarks = Math.Max(positiveMarks - negativeMarks, 0);
                             return new
                             {
                                 Test = t,
@@ -147,11 +106,14 @@ namespace Intern.Services
                 return sm;
 
 
-                
+
             }
             // If neither found
             throw new AppException("User not found", HttpStatusCode.NotFound);
         }
+
+
+
 
         public async Task<ClientUserSM> UpdateAsync(int id, ClientUserSM objSM)
         {

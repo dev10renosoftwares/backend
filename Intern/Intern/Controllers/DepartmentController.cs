@@ -10,7 +10,7 @@ namespace Intern.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [AllowAnonymous]
+   
     public class DepartmentController : ControllerBase
     {
        private readonly DepartmentService _service;
@@ -21,7 +21,8 @@ namespace Intern.Controllers
                 _service = service;
                _dashService = dashboardService;
         }
-      
+
+        [Authorize(Roles = "ClientEmployee,SuperAdmin,SystemAdmin")]
         [HttpGet]
         public async Task<ApiResponse<IEnumerable<DepartmentSM>>> GetAll()
         {
@@ -29,7 +30,7 @@ namespace Intern.Controllers
             return ApiResponse<IEnumerable<DepartmentSM>>.SuccessResponse(result, "All Departments fetched successfully");
         }
 
-
+        [Authorize(Roles = "SuperAdmin,SystemAdmin")]
         [HttpGet("{id}")]
         public async Task<ApiResponse<DepartmentSM>> GetById(int id)
         {
@@ -40,7 +41,7 @@ namespace Intern.Controllers
             return ApiResponse<DepartmentSM>.SuccessResponse(result, "Department fetched successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost]
         public async Task<ApiResponse<string>> Create([FromBody] DepartmentSM addDepartmentSM)
         {
@@ -49,7 +50,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Department Added Successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPut("{id}")]
         public async Task<ApiResponse<string>> Update(int id, [FromBody] DepartmentSM updateDepartmentSM)
         {
@@ -60,7 +61,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Department updated successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpDelete("{id}")]
         public async Task<ApiResponse<string>> Delete(int id)
         {
@@ -71,7 +72,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Department deleted successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost("assign-posts")]
         public async Task<ApiResponse<string>> AssignPostsToDepartment([FromBody] DepartmentPostsSM request)
         {
@@ -81,7 +82,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Posts assigned successfully");
         }
 
-        [Authorize(Roles ="SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost("remove-posts")]
 
         public async Task<ApiResponse<string>> RemovepostsfromDepartment([FromBody] RemovepostsfromDepartmentSM removepostsfromDepartment)
@@ -93,7 +94,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Post removed from Department Successfully");
         }
 
-        [Authorize(Roles = "SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         [HttpPost("getall-posts")]
         public async Task<ApiResponse<DepartmentPostsResponseSM>> GetPostsByDepartmentId(int deptId)
        
@@ -102,8 +103,9 @@ namespace Intern.Controllers
             return ApiResponse<DepartmentPostsResponseSM>.SuccessResponse(response, "Posts fetched successfully");
         }
 
-        [HttpGet("dashboard/{departmentId}")]
 
+        [Authorize(Roles = "ClientEmployee,SuperAdmin,SystemAdmin")]
+        [HttpGet("dashboard/{departmentId}")]
         public async Task<ApiResponse<DashboardSM>> GetDashboardDetails(int departmentId)
         {
             if (departmentId <= 0)

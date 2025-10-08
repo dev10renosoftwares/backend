@@ -16,7 +16,7 @@ namespace Intern.DataModels.User
 
         [ForeignKey(nameof(PostDM))]
         public int? PostId { get; set; }
-        public PostDM Post { get; set; }
+        public PostDM? Post { get; set; }
 
 
         [ForeignKey(nameof(SubjectDM))]

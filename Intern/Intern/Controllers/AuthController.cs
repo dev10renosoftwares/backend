@@ -133,11 +133,8 @@ namespace Intern.Controllers
             return ApiResponse<LoginResponseSM>.SuccessResponse(response, message);
         }
 
-        
 
-
-
-        [Authorize(Roles = "ClientEmployee")]
+       
         [HttpPost("ChangePassword")]
 
         public async Task<ApiResponse<string>> ChangePassword([FromBody] ChangePasswordSM changePasswordSM)
@@ -191,9 +188,7 @@ namespace Intern.Controllers
                return ApiResponse<string>.SuccessResponse(null,message);
 
            
-        }
-
-       
+        } 
 
 
 
