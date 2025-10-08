@@ -3,8 +3,10 @@ using Common.Helpers;
 using Intern.Common;
 using Intern.Common.Helpers;
 using Intern.Data;
+using Intern.DataModels.Enums;
 using Intern.DataModels.User;
 using Intern.ServiceModels;
+using Intern.ServiceModels.Enums;
 using Intern.ServiceModels.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -125,18 +127,21 @@ namespace Intern.Services
             {
                 throw new AppException("User not found", HttpStatusCode.NotFound);
             }
+            if(objSM == null)
+            {
+                throw new AppException("Please provide details to update", HttpStatusCode.BadRequest);
+            }
+            objSM.Id = userDM.Id;
+            objSM.Email = userDM.Email;
+            objSM.Role = (UserRoleSM)userDM.Role;
+            objSM.UserName = userDM.LoginId;
+            objSM.Password = userDM.Password;
+            objSM.IsEmailConfirmed = userDM.IsEmailConfirmed;
+            objSM.IsActive = userDM.IsActive;
+            objSM.IsMobileNumberConfirmed = userDM.IsMobileNumberConfirmed;
 
             // ✅ Map incoming values into the tracked entity
             _mapper.Map(objSM, userDM);
-
-            // ✅ Keep values that should not be overridden
-            userDM.Id = userDM.Id; // EF handles this, but for safety
-            userDM.Role = userDM.Role;
-            userDM.Password = userDM.Password;
-            userDM.Email = userDM.Email;
-            userDM.IsEmailConfirmed = userDM.IsEmailConfirmed;
-            userDM.IsActive = userDM.IsActive;
-            userDM.IsMobileNumberConfirmed = userDM.IsMobileNumberConfirmed;
 
             userDM.LastModifiedBy = loginId;
             userDM.LastModifiedOnUtc = DateTime.UtcNow;

@@ -1,5 +1,6 @@
 ﻿using Intern.DataModels.Enums;
 using Intern.ServiceModels.BaseServiceModels;
+using Intern.ServiceModels.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Intern.ServiceModels
@@ -27,7 +28,7 @@ namespace Intern.ServiceModels
         public string? ImageBase64 { get; set; }
 
         [Required(ErrorMessage = "Role is required")]
-        public UserRoleDM Role { get; set; }   // Admin, SuperAdmin, etc.
+        public UserRoleSM Role { get; set; }   // Admin, SuperAdmin, etc.
 
         [Phone(ErrorMessage = "Invalid mobile number")]
         [MaxLength(15, ErrorMessage = "Mobile number cannot exceed 15 digits")]

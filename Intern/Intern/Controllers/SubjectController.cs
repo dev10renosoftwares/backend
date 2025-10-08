@@ -87,7 +87,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "Subject removed from Post successfully");
         }
 
-        [Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin,ClientEmployee")]
         [HttpGet("getall-subjects/{postId}")]
         public async Task<ApiResponse<PostSubjectsResponseSM>> GetSubjectsByPostId(int postId)
         {

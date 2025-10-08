@@ -134,7 +134,7 @@ namespace Intern.Controllers
         }
 
 
-       
+        [Authorize]
         [HttpPost("ChangePassword")]
 
         public async Task<ApiResponse<string>> ChangePassword([FromBody] ChangePasswordSM changePasswordSM)
