@@ -550,7 +550,7 @@ namespace Intern.Services
             }
         }
 
-        public async Task<string> ChangePassword(ChangePasswordSM changePasswordSM)
+        public async Task<string> ChangePassword(int id, ChangePasswordSM changePasswordSM)
         {
             if (changePasswordSM.NewPassword != changePasswordSM.ConfirmPassword)
             {
@@ -560,10 +560,7 @@ namespace Intern.Services
             var oldPasswordHash = _passwordHelper.HashPassword(changePasswordSM.OldPassword);
             var newPasswordHash = _passwordHelper.HashPassword(changePasswordSM.NewPassword);
 
-
-            var userId = _tokenhelper.GetUserIdFromToken();
-
-            var user = await _Context.ClientUsers.FirstOrDefaultAsync(cu => cu.Id == userId);
+            var user = await _Context.ClientUsers.FirstOrDefaultAsync(cu => cu.Id == id);
 
             if (user == null)
             {

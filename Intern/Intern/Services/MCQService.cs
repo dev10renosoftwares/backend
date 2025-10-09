@@ -405,10 +405,15 @@ namespace Intern.Services
             return _mapper.Map<UserTestDetailsSM>(dm);
         }
 
-        public async Task<UserTestDetailsSM> GetTestResults(MockTestQuestionsSM objSM)
+        public async Task<UserTestDetailsSM> GetTestResults(int id, MockTestQuestionsSM objSM)
         {
+            var existingUser = await _context.ClientUsers
+               .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
 
-            // 1️⃣ Validate test record
+            if (existingUser == null)
+            {
+                throw new AppException("User details not Found", HttpStatusCode.Unauthorized);
+            }
 
             try
             {

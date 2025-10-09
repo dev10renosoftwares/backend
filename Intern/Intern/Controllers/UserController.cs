@@ -1,12 +1,9 @@
-﻿using System.Net;
-using Common.Helpers;
-using Intern.Common.Helpers;
+﻿using Intern.Common.Helpers;
 using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
 using Intern.ServiceModels.User;
 using Intern.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Intern.Controllers

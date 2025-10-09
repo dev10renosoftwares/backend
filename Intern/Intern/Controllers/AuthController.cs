@@ -1,13 +1,11 @@
-﻿using System.Net;
-using Common.Helpers;
+﻿using Common.Helpers;
 using Intern.Common.Helpers;
 using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
-using Intern.ServiceModels.User;
 using Intern.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace Intern.Controllers
 {
@@ -16,12 +14,12 @@ namespace Intern.Controllers
     public class AuthController : ControllerBase
     {
         private readonly Authservices _authservices;
-        private readonly DashboardService _dashService;
 
-        public AuthController(Authservices authservices,DashboardService dashboardService)
+        private readonly TokenHelper _tokenHelper;
+        public AuthController(Authservices authservices, TokenHelper tokenHelper)
         {
             _authservices = authservices;
-            _dashService = dashboardService;
+            _tokenHelper = tokenHelper;
         }
         [HttpPost("EmailExists")]
         public async Task<ApiResponse<string>> VerifyEmail(EmailExistsSM emailExists)
@@ -134,7 +132,7 @@ namespace Intern.Controllers
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "ClientEmployee")]
         [HttpPost("ChangePassword")]
 
         public async Task<ApiResponse<string>> ChangePassword([FromBody] ChangePasswordSM changePasswordSM)
@@ -148,21 +146,25 @@ namespace Intern.Controllers
 
                 throw new AppException(string.Join(" | ", errors), HttpStatusCode.BadRequest);
             }
-
-            var message = await _authservices.ChangePassword(changePasswordSM);
+            var userId = _tokenHelper.GetUserIdFromToken();
+            if (userId <= 0)
+            {
+                throw new AppException("User is not authorized", HttpStatusCode.Unauthorized);
+            }
+            var message = await _authservices.ChangePassword(userId, changePasswordSM);
 
             return ApiResponse<string>.SuccessResponse(message);
         }
         [HttpPost("forgotpassword")]
         public async Task<ApiResponse<string>> ForgotPassword( string email)
         {
+            
             if (string.IsNullOrEmpty(email) || email.Trim().ToLower() == "null")
             {
                 throw new AppException("Email cannot be null or empty.", HttpStatusCode.BadRequest);
             }
-
-           
-                var message = await _authservices.ForgotPasswordAsync(email);
+            
+            var message = await _authservices.ForgotPasswordAsync(email);
             return ApiResponse<string>.SuccessResponse(null,message);
 
                 

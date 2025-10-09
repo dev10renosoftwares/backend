@@ -1,16 +1,13 @@
-﻿using System.Net;
-using Common.Helpers;
+﻿using Common.Helpers;
 using Intern.Common.Helpers;
 using Intern.Data;
-using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
 using Intern.ServiceModels.Exams;
 using Intern.ServiceModels.User;
 using Intern.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace Intern.Controllers
 {
@@ -21,13 +18,11 @@ namespace Intern.Controllers
     {
         private readonly MCQService _mCQService;
         private readonly TokenHelper _tokenHelper;
-        private readonly ApiDbContext _context;
 
-        public MCQController(MCQService mCQService,TokenHelper tokenHelper,ApiDbContext context)
+        public MCQController(MCQService mCQService,TokenHelper tokenHelper)
         {
             _mCQService = mCQService;
             _tokenHelper = tokenHelper;
-            _context = context;
         }
         [Authorize(Roles = "SuperAdmin,SystemAdmin")]
         [HttpGet]
@@ -117,16 +112,13 @@ namespace Intern.Controllers
         public async Task<ApiResponse<UserTestDetailsSM>> GetTestResults([FromBody] MockTestQuestionsSM answers)
         {
             var userId = _tokenHelper.GetUserIdFromToken();
-
-            var existingUser = await _context.ClientUsers
-                .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
-
-            if (existingUser == null)
+            if(userId <= 0)
             {
                 throw new AppException("User is not authorized", HttpStatusCode.Unauthorized);
             }
+                      
   
-            var result = await _mCQService.GetTestResults(answers);
+            var result = await _mCQService.GetTestResults(userId, answers);
 
             return ApiResponse<UserTestDetailsSM>.SuccessResponse(result, "MCQs Result fetched successfully");
         }

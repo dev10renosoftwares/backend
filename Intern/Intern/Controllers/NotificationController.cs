@@ -2,14 +2,12 @@
 using Intern.ServiceModels.Exams;
 using Intern.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Intern.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [AllowAnonymous]
     public class NotificationController : ControllerBase
     {
         private readonly NotificationService _notificationService;

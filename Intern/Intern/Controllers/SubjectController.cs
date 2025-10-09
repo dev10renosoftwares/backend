@@ -27,7 +27,7 @@ namespace Intern.Controllers
             return ApiResponse<IEnumerable<SubjectSM>>.SuccessResponse(result, "All subjects fetched successfully");
         }
 
-        [Authorize(Roles = "SuperAdmin,SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin,SystemAdmin, ClientEmployee")]
         [HttpGet("{id}")]
         public async Task<ApiResponse<SubjectSM>> GetById(int id)
         {

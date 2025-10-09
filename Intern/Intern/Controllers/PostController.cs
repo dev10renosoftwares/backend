@@ -12,7 +12,6 @@ namespace Intern.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [AllowAnonymous]
     public class PostController : ControllerBase
     {
         private readonly PostService _postService;
@@ -30,7 +29,7 @@ namespace Intern.Controllers
             return ApiResponse<IEnumerable<PostSM>>.SuccessResponse(result, "All Posts fetched successfully");
         }
 
-        [Authorize(Roles = "SuperAdmin,SystemAdmin")]
+        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]
         [HttpGet("{id}")]
         public async Task<ApiResponse<PostSM>> GetById(int id)
         {
