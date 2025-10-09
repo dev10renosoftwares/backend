@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Intern.DataModels.Enums;
+using Intern.ServiceModels.Enums;
 
 namespace Intern.ServiceModels
 {
@@ -22,7 +23,7 @@ namespace Intern.ServiceModels
         public string? Password { get; set; }
 
       
-        public UserRoleDM Role { get; set; }
+        public UserRoleSM Role { get; set; }
 
         public string? MobileNumber { get; set; }
 

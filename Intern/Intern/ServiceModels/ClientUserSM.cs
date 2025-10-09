@@ -12,8 +12,7 @@ namespace Intern.ServiceModels
         [MaxLength(50, ErrorMessage = "LoginId cannot exceed 50 characters")]
         public string UserName { get; set; }
 
-        [Required(ErrorMessage = "Name is required")]
-        [MaxLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+        
         public string Name { get; set; }
 
         [Required(ErrorMessage = "Email is required")]
@@ -30,8 +29,7 @@ namespace Intern.ServiceModels
         [Required(ErrorMessage = "Role is required")]
         public UserRoleSM Role { get; set; }   // Admin, SuperAdmin, etc.
 
-        [Phone(ErrorMessage = "Invalid mobile number")]
-        [MaxLength(15, ErrorMessage = "Mobile number cannot exceed 15 digits")]
+        
         public string? MobileNumber { get; set; }
 
         public bool IsActive { get; set; } 

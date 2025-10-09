@@ -284,18 +284,18 @@ namespace Intern.Services
 
 
 
-        public async Task<LoginResponseSM> LoginAsync(LoginSM loginSM)
+        /*public async Task<LoginResponseSM> LoginAsync(LoginSM loginSM)
         {
             // 1. Validate role
-            if (!Enum.IsDefined(typeof(UserRoleDM), loginSM.Role))
+            if (!Enum.IsDefined(typeof(UserRoleSM), loginSM.Role))
                 throw new AppException("Invalid role specified", HttpStatusCode.BadRequest);
 
             object user = loginSM.Role switch
             {
-                UserRoleDM.SuperAdmin or UserRoleDM.SystemAdmin =>
+                UserRoleSM.SuperAdmin or UserRoleSM.SystemAdmin =>
                     await _Context.ApplicationUsers.FirstOrDefaultAsync(u => u.Email == loginSM.Email),
 
-                UserRoleDM.ClientEmployee =>
+                UserRoleSM.ClientEmployee =>
                     await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == loginSM.Email),
 
                 _ => throw new AppException("Unsupported role for login", HttpStatusCode.BadRequest)
@@ -307,12 +307,12 @@ namespace Intern.Services
             if (user is ClientUserDM clientUser && !clientUser.IsEmailConfirmed)
                 throw new AppException("Please verify your email before logging in.", HttpStatusCode.Forbidden);
 
-
+            
             // 2. Map to UserSM for password + image handling
             var userSM = _mapper.Map<UserSM>(user);
-
+            
             // Password checks
-            if (string.IsNullOrEmpty(userSM.Password))
+            if (string.IsNullOrEmpty(user.))
                 throw new AppException("This account is registered via Google. Please log in using Google login.", HttpStatusCode.BadRequest);
 
             var isValidPassword = _passwordHelper.VerifyPassword(loginSM.Password, userSM.Password);
@@ -335,7 +335,89 @@ namespace Intern.Services
             responseSM.Expiration = token.ValidTo;
 
             return responseSM;
+        }*/
+
+        public async Task<LoginResponseSM> LoginAsync(LoginSM loginSM)
+        {
+            if (loginSM == null) throw new ArgumentNullException(nameof(loginSM));
+
+            object? dbUser = null;
+            string? imagePath = null;
+
+            // 1. Fetch user from DB based on role
+            switch (loginSM.Role)
+            {
+                case UserRoleSM.SuperAdmin:
+                case UserRoleSM.SystemAdmin:
+                    var appUser = await _Context.ApplicationUsers
+                        .FirstOrDefaultAsync(x => x.LoginId == loginSM.Email || x.Email == loginSM.Email);
+
+                    if (appUser == null)
+                        throw new AppException("User Not Found", HttpStatusCode.Unauthorized);
+
+                    if (string.IsNullOrEmpty(appUser.Password))
+                        throw new AppException("Social login used. Set a profile password for custom login", HttpStatusCode.BadRequest);
+
+                    if (!_passwordHelper.VerifyPassword(loginSM.Password, appUser.Password))
+                        throw new AppException("User Not Found", HttpStatusCode.Unauthorized);
+
+                    if (appUser.Role != (UserRoleDM)loginSM.Role)
+                        throw new AppException("User Not Found", HttpStatusCode.Unauthorized);
+
+                    dbUser = appUser;
+                    imagePath = appUser.ImagePath;
+                    break;
+
+                case UserRoleSM.ClientEmployee:
+                    var clientUser = await _Context.ClientUsers
+                        .FirstOrDefaultAsync(x => x.LoginId == loginSM.Email || x.Email == loginSM.Email);
+
+                    if (clientUser == null)
+                        throw new AppException("User Not Found", HttpStatusCode.Unauthorized);
+
+                    if (string.IsNullOrEmpty(clientUser.Password))
+                        throw new AppException("Social login used. Set a profile password for custom login", HttpStatusCode.BadRequest);
+
+                    if (!_passwordHelper.VerifyPassword(loginSM.Password, clientUser.Password))
+                        throw new AppException("User Not Found", HttpStatusCode.Unauthorized);
+
+                    if (clientUser.Role != (UserRoleDM)loginSM.Role)
+                        throw new AppException("User Not Found", HttpStatusCode.Unauthorized);
+
+                    dbUser = clientUser;
+                    imagePath = clientUser.ImagePath;
+                    break;
+
+                default:
+                    throw new AppException("Invalid Role", HttpStatusCode.BadRequest);
+            }
+
+            // 2. Map DB user to UserSM
+            UserSM userSM = dbUser switch
+            {
+                ApplicationUserDM app => _mapper.Map<UserSM>(app),
+                ClientUserDM client => _mapper.Map<UserSM>(client),
+                _ => throw new AppException("Invalid user type", HttpStatusCode.BadRequest)
+            };
+
+            // 3. Handle image conversion
+            if (!string.IsNullOrEmpty(imagePath) && File.Exists(imagePath))
+                userSM.ImageBase64 = _imageHelper.ConvertFileToBase64(imagePath);
+            else
+                userSM.ImageBase64 = null;
+
+            // 4. Generate JWT
+            var token = JWTToken.GenerateJWTToken(_configuration, userSM);
+
+            // 5. Map to LoginResponseSM
+            var responseSM = _mapper.Map<LoginResponseSM>(userSM);
+            responseSM.ImagePath = userSM.ImageBase64;
+            responseSM.Token = new JwtSecurityTokenHandler().WriteToken(token);
+            responseSM.Expiration = token.ValidTo;
+
+            return responseSM;
         }
+
 
         public async Task<LoginResponseSM> ProcessGoogleIdTokenAsync(GoogleSM googleSM)
         {

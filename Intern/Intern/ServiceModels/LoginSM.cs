@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Intern.DataModels.Enums;
+using Intern.ServiceModels.Enums;
 
 namespace Intern.ServiceModels
 {
@@ -14,7 +15,7 @@ namespace Intern.ServiceModels
         public string Password { get; set; }
 
         [Required(ErrorMessage = "Role is required.")]
-        [EnumDataType(typeof(UserRoleDM), ErrorMessage = "Invalid role.")]
-        public UserRoleDM Role { get; set; }
+        [EnumDataType(typeof(UserRoleSM), ErrorMessage = "Invalid role.")]
+        public UserRoleSM Role { get; set; }
     }
 }

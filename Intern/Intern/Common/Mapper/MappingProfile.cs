@@ -88,13 +88,24 @@ namespace Intern.Common.Mapper
                 //    .ForMember(dest => dest.Password, opt => opt.Ignore())       // don’t expose password
                 //    .ForMember(dest => dest.ImageBase64, opt => opt.Ignore());    // you set this manually
 
-                CreateMap<ClientUserSM, ClientUserDM>()
-                 .ForMember(dest => dest.Id, opt => opt.Ignore())           // prevent PK overwrite
-                .ForMember(dest => dest.Password, opt => opt.Ignore())     // password handled separately
-                .ForMember(dest => dest.Email, opt => opt.Ignore())        // don’t let user change email
-                .ForMember(dest => dest.Role, opt => opt.Ignore())         // role is managed by system
-                .ForAllMembers(opts => opts.Condition(
-                (src, dest, srcMember) => srcMember != null));
+                     CreateMap<ClientUserSM, ClientUserDM>()
+                    // ❌ Prevent system-managed or protected fields from being overwritten
+                     .ForMember(dest => dest.Id, opt => opt.Ignore())
+                     .ForMember(dest => dest.Email, opt => opt.Ignore())
+                     .ForMember(dest => dest.Role, opt => opt.Ignore())
+                     .ForMember(dest => dest.LoginId, opt => opt.Ignore())
+                     .ForMember(dest => dest.Password, opt => opt.Ignore())
+                     .ForMember(dest => dest.IsEmailConfirmed, opt => opt.Ignore())
+                     .ForMember(dest => dest.IsMobileNumberConfirmed, opt => opt.Ignore())
+                     .ForMember(dest => dest.IsActive, opt => opt.Ignore())
+
+                     // ✅ Apply “don’t overwrite with null or empty string” logic globally
+                 .ForAllMembers(opts => opts.Condition(
+                       (src, dest, srcMember) =>
+                        srcMember != null &&
+                         (!(srcMember is string str) || !string.IsNullOrWhiteSpace(str))
+    ));
+
 
 
 

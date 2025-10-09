@@ -116,21 +116,101 @@ namespace Intern.Services
             throw new AppException("User not found", HttpStatusCode.NotFound);
         }
 
+        public async Task<ClientUserSM> GetUserDetailsById(int id)
+        {
+            var dm = await _context.ClientUsers.FindAsync(id);
+            if(dm == null)
+            {
+                return null;
+            }
+            var sm = _mapper.Map<ClientUserSM>(dm);
+            sm.Password = null;
+            if (!string.IsNullOrEmpty(dm.ImagePath))
+            {
+                // convert image path to base64
+                sm.ImageBase64 = _imageHelper.ConvertFileToBase64(dm.ImagePath);
+            }
+            return sm;
+        }
 
 
+        //public async Task<ClientUserSM> UpdateAsync(int id, ClientUserSM objSM)
+        //{
+        //    var loginId = _tokenHelper.GetLoginIdFromToken();
+        //    var userDM = await _context.ClientUsers.FindAsync(id);
+        //    if (userDM == null)
+        //    {
+        //        throw new AppException("User not found", HttpStatusCode.NotFound);
+        //    }
+        //    if(objSM == null)
+        //    {
+        //        throw new AppException("Please provide details to update", HttpStatusCode.BadRequest);
+        //    }
+        //    objSM.Id = userDM.Id;
+        //    objSM.Email = userDM.Email;
+        //    objSM.Role = (UserRoleSM)userDM.Role;
+        //    objSM.UserName = userDM.LoginId;
+        //    objSM.Password = userDM.Password;
+        //    objSM.IsEmailConfirmed = userDM.IsEmailConfirmed;
+        //    objSM.IsActive = userDM.IsActive;
+        //    objSM.IsMobileNumberConfirmed = userDM.IsMobileNumberConfirmed;
+
+        //    // ✅ Map incoming values into the tracked entity
+        //    _mapper.Map(objSM, userDM);
+
+        //    userDM.LastModifiedBy = loginId;
+        //    userDM.LastModifiedOnUtc = DateTime.UtcNow;
+
+        //    // ✅ Handle image
+        //    if (!string.IsNullOrEmpty(objSM.ImageBase64))
+        //    {
+        //        var directory = Directory.GetCurrentDirectory();
+        //        var newPath = Path.Combine(directory, @"Images");
+
+        //        // delete old image if it exists
+        //        if (!string.IsNullOrEmpty(userDM.ImagePath) && File.Exists(userDM.ImagePath))
+        //        {
+        //            File.Delete(userDM.ImagePath);
+        //        }
+
+        //        // save new image
+        //        userDM.ImagePath = await _imageHelper.SaveBase64ImageAsync(objSM.ImageBase64, newPath);
+        //    }
+
+
+        //    try {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
+
+        //    // ✅ Prepare response
+        //    var userSM = _mapper.Map<ClientUserSM>(userDM);
+
+        //    // Convert existing file path to Base64 if file exists
+        //    if (!string.IsNullOrEmpty(userDM.ImagePath) && File.Exists(userDM.ImagePath))
+        //    {
+        //        userSM.ImageBase64 = Convert.ToBase64String(File.ReadAllBytes(userDM.ImagePath));
+        //    }
+
+        //    return userSM;
+
+        //}
 
         public async Task<ClientUserSM> UpdateAsync(int id, ClientUserSM objSM)
         {
             var loginId = _tokenHelper.GetLoginIdFromToken();
             var userDM = await _context.ClientUsers.FindAsync(id);
+
             if (userDM == null)
-            {
                 throw new AppException("User not found", HttpStatusCode.NotFound);
-            }
-            if(objSM == null)
-            {
+
+            if (objSM == null)
                 throw new AppException("Please provide details to update", HttpStatusCode.BadRequest);
-            }
+
+            // ❌ Prevent system-managed fields from being overwritten
             objSM.Id = userDM.Id;
             objSM.Email = userDM.Email;
             objSM.Role = (UserRoleSM)userDM.Role;
@@ -140,51 +220,49 @@ namespace Intern.Services
             objSM.IsActive = userDM.IsActive;
             objSM.IsMobileNumberConfirmed = userDM.IsMobileNumberConfirmed;
 
-            // ✅ Map incoming values into the tracked entity
+            // ✅ Map only allowed, non-null, non-empty fields
             _mapper.Map(objSM, userDM);
 
             userDM.LastModifiedBy = loginId;
             userDM.LastModifiedOnUtc = DateTime.UtcNow;
 
             // ✅ Handle image
+            var directory = Directory.GetCurrentDirectory();
+            var newPath = Path.Combine(directory, @"Images");
+
             if (!string.IsNullOrEmpty(objSM.ImageBase64))
             {
-                var directory = Directory.GetCurrentDirectory();
-                var newPath = Path.Combine(directory, @"Images");
-
-                // delete old image if it exists
+                // If new image is provided → delete old & save new
                 if (!string.IsNullOrEmpty(userDM.ImagePath) && File.Exists(userDM.ImagePath))
                 {
                     File.Delete(userDM.ImagePath);
                 }
 
-                // save new image
                 userDM.ImagePath = await _imageHelper.SaveBase64ImageAsync(objSM.ImageBase64, newPath);
             }
+            else
+            {
+                // No new image uploaded → keep existing if exists, else null
+                if (!string.IsNullOrEmpty(userDM.ImagePath) && File.Exists(userDM.ImagePath))
+                {
+                    // keep existing image path
+                }
+                else
+                {
+                    userDM.ImagePath = null;
+                }
+            }
 
-            
-            try {
+            try
+            {
                 await _context.SaveChangesAsync();
             }
             catch
             {
-                throw;
+                throw new AppException("Something went wrong while updating your details. Please try again later", HttpStatusCode.NotFound);
             }
 
-            // ✅ Prepare response
-            var userSM = _mapper.Map<ClientUserSM>(userDM);
-
-            // Convert existing file path to Base64 if file exists
-            if (!string.IsNullOrEmpty(userDM.ImagePath) && File.Exists(userDM.ImagePath))
-            {
-                userSM.ImageBase64 = Convert.ToBase64String(File.ReadAllBytes(userDM.ImagePath));
-            }
-
-            return userSM;
-
+            return await GetUserDetailsById(userDM.Id);
         }
-
-
-
     }
 }
