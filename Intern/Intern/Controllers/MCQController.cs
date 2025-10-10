@@ -100,11 +100,11 @@ namespace Intern.Controllers
 
         [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]
         [HttpGet("get-mcqs")]
-        public async Task<ApiResponse<MockTestQuestionsSM>> GetAllMCQs(int postId, int departmentId)
+        public async Task<ApiResponse<MockTestQuestionsResponseSM>> GetAllMCQs(int postId, int departmentId)
         {
             int userId = _tokenHelper.GetUserIdFromToken();
-            var result = await _mCQService.GetMCQsByDepartmentAndPostAsync(userId, departmentId, postId);
-            return ApiResponse<MockTestQuestionsSM>.SuccessResponse(result, "MCQs fetched successfully");
+            var result = await _mCQService.GetSectionalMcqsByDepartmentAndPostId(userId, departmentId, postId);
+            return ApiResponse<MockTestQuestionsResponseSM>.SuccessResponse(result, "MCQs fetched successfully");
         }
 
         [Authorize(Roles = "ClientEmployee")]
