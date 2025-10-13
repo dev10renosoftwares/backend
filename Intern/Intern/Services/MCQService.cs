@@ -388,66 +388,49 @@ namespace Intern.Services
                     .CountAsync(t => t.UserId == userId);
 
                 if (userTestCount >= _examConfig.MaxTestsPerUser)
-                    throw new AppException(
-                        $"You cannot attempt more than {_examConfig.MaxTestsPerUser} tests.",
-                        HttpStatusCode.Forbidden
-                    );
+                    throw new AppException($"You cannot attempt more than {_examConfig.MaxTestsPerUser} tests.", HttpStatusCode.Forbidden);
 
                 string loginId = _tokenHelper.GetLoginIdFromToken();
 
                 // ✅ 2. Validate Department & Post
                 var existingDept = await _deptService.GetByIdAsync(departmentId);
                 var existingPost = await _postSevice.GetByIdAsync(postId);
-
                 if (existingDept == null || existingPost == null)
                     throw new AppException("Department or post not found.", HttpStatusCode.NotFound);
 
                 // ✅ 3. Validate post belongs to department
                 bool isValidPost = await _context.DepartmentPosts
                     .AnyAsync(dp => dp.DepartmentId == departmentId && dp.PostId == postId);
-
                 if (!isValidPost)
                     throw new AppException("The specified post does not belong to this department.", HttpStatusCode.Conflict);
 
                 // ✅ 4. Get subjects linked to this post
-                var subjectIds = await _context.SubjectPosts
-                    .Where(ps => ps.PostId == postId)
-                    .Select(ps => ps.SubjectId)
-                    .Distinct()
-                    .ToListAsync();
+                var subjects = await (from s in _context.Subjects
+                                      join sp in _context.SubjectPosts on s.Id equals sp.SubjectId
+                                      where sp.PostId == postId
+                                      select new SubjectSM
+                                      {
+                                          Id = s.Id,
+                                          SubjectName = s.SubjectName
+                                      }).Distinct().ToListAsync();
 
-                if (!subjectIds.Any())
+                if (!subjects.Any())
                     throw new AppException("No subjects found for the specified post.", HttpStatusCode.NotFound);
 
                 const int totalMcqs = 50;
-                int baseCountPerSubject = totalMcqs / subjectIds.Count;
-                int remaining = totalMcqs % subjectIds.Count;
+                int totalSubjects = subjects.Count;
+                int baseCountPerSubject = totalMcqs / totalSubjects;
+                int remaining = totalMcqs % totalSubjects;
 
                 var subjectMcqList = new List<SubjectMCQsSM>();
-                var extraMcqs = new List<MCQsSM>();
+                var eligibleSubjects = new List<SubjectSM>(); // subjects that still have MCQs
 
-                // ✅ 5. Loop each subject and fetch MCQs
-                foreach (var subjectId in subjectIds)
+                // ✅ 5. Fetch MCQs for each subject
+                foreach (var subject in subjects)
                 {
-                    // MCQs mapped to post
-                    var postMcqs = await (from m in _context.MCQs
-                                          join mps in _context.MCQPostSubjects on m.Id equals mps.MCQId
-                                          where mps.PostId == postId
-                                          select new MCQsSM
-                                          {
-                                              Id = m.Id,
-                                              Question = m.Question,
-                                              OptionA = m.OptionA,
-                                              OptionB = m.OptionB,
-                                              OptionC = m.OptionC,
-                                              OptionD = m.OptionD
-                                          })
-                                         .ToListAsync();
-
-                    // MCQs mapped to subject
                     var subjectMcqs = await (from m in _context.MCQs
                                              join mps in _context.MCQPostSubjects on m.Id equals mps.MCQId
-                                             where mps.SubjectId == subjectId
+                                             where mps.SubjectId == subject.Id
                                              select new MCQsSM
                                              {
                                                  Id = m.Id,
@@ -457,46 +440,112 @@ namespace Intern.Services
                                                  OptionC = m.OptionC,
                                                  OptionD = m.OptionD
                                              })
-                                            .ToListAsync();
+                                             .ToListAsync();
 
-                    // Combine & randomize
-                    var mcqs = postMcqs
-                        .Union(subjectMcqs)
-                        .GroupBy(x => x.Id)
-                        .Select(g => g.First())
-                        .OrderBy(_ => Guid.NewGuid())
-                        .ToList();
-
-                    var selected = mcqs.Take(baseCountPerSubject).ToList();
-
-                    if (selected.Count < baseCountPerSubject)
+                    if (!subjectMcqs.Any())
                     {
-                        remaining += (baseCountPerSubject - selected.Count);
+                        // Subject has no MCQs → keep empty
+                        subjectMcqList.Add(new SubjectMCQsSM
+                        {
+                            Subject = subject,
+                            MCQs = new List<MCQsSM>()
+                        });
+
+                        // Add this subject’s quota to remaining pool
+                        remaining += baseCountPerSubject;
+                        continue;
                     }
-                    else if (selected.Count > baseCountPerSubject)
+
+                    // Take minimum of available or quota
+                    int takeCount = Math.Min(baseCountPerSubject, subjectMcqs.Count);
+                    var selected = subjectMcqs.OrderBy(_ => Guid.NewGuid()).Take(takeCount).ToList();
+
+                    if (subjectMcqs.Count < baseCountPerSubject)
                     {
-                        extraMcqs.AddRange(mcqs.Skip(baseCountPerSubject));
+                        // Subject lacks enough MCQs — redistribute deficit later
+                        int missing = baseCountPerSubject - subjectMcqs.Count;
+                        remaining += missing;
+                    }
+                    else
+                    {
+                        eligibleSubjects.Add(subject);
                     }
 
                     subjectMcqList.Add(new SubjectMCQsSM
                     {
-                        Subject = new SubjectSM { Id = (int)subjectId},
+                        Subject = subject,
                         MCQs = selected
                     });
                 }
 
-                // ✅ 6. Redistribute remaining questions
-                if (remaining > 0 && extraMcqs.Any())
+                // ✅ 6. Redistribute remaining MCQs among subjects that still have MCQs
+                if (remaining > 0 && eligibleSubjects.Any())
                 {
-                    var extras = extraMcqs.OrderBy(x => Guid.NewGuid()).Take(remaining).ToList();
+                    int perSubjectExtra = remaining / eligibleSubjects.Count;
+                    int extraLeft = remaining % eligibleSubjects.Count;
 
-                    if (subjectMcqList.Any())
-                        subjectMcqList.First().MCQs.AddRange(extras);
+                    foreach (var subject in eligibleSubjects)
+                    {
+                        var available = await (from m in _context.MCQs
+                                               join mps in _context.MCQPostSubjects on m.Id equals mps.MCQId
+                                               where mps.SubjectId == subject.Id
+                                               select new MCQsSM
+                                               {
+                                                   Id = m.Id,
+                                                   Question = m.Question,
+                                                   OptionA = m.OptionA,
+                                                   OptionB = m.OptionB,
+                                                   OptionC = m.OptionC,
+                                                   OptionD = m.OptionD
+                                               })
+                                               .ToListAsync();
+
+                        var current = subjectMcqList.First(x => x.Subject.Id == subject.Id).MCQs;
+                        int canTake = Math.Min(perSubjectExtra, Math.Max(0, available.Count - current.Count));
+
+                        if (canTake > 0)
+                        {
+                            var extra = available.ExceptBy(current.Select(x => x.Id), x => x.Id)
+                                                 .OrderBy(_ => Guid.NewGuid())
+                                                 .Take(canTake)
+                                                 .ToList();
+                            current.AddRange(extra);
+                        }
+                    }
+
+                    // ✅ 7. Distribute leftover 1-2 MCQs to first subjects that can take more
+                    if (extraLeft > 0)
+                    {
+                        foreach (var subject in eligibleSubjects.Take(extraLeft))
+                        {
+                            var available = await (from m in _context.MCQs
+                                                   join mps in _context.MCQPostSubjects on m.Id equals mps.MCQId
+                                                   where mps.SubjectId == subject.Id
+                                                   select new MCQsSM
+                                                   {
+                                                       Id = m.Id,
+                                                       Question = m.Question,
+                                                       OptionA = m.OptionA,
+                                                       OptionB = m.OptionB,
+                                                       OptionC = m.OptionC,
+                                                       OptionD = m.OptionD
+                                                   })
+                                                   .ToListAsync();
+
+                            var current = subjectMcqList.First(x => x.Subject.Id == subject.Id).MCQs;
+                            var extra = available.ExceptBy(current.Select(x => x.Id), x => x.Id)
+                                                 .OrderBy(_ => Guid.NewGuid())
+                                                 .Take(1)
+                                                 .ToList();
+                            current.AddRange(extra);
+                        }
+                    }
                 }
 
+                // ✅ 8. Calculate final total MCQs
                 int totalSelectedMcqs = subjectMcqList.Sum(s => s.MCQs.Count);
 
-                // ✅ 7. Save test details
+                // ✅ 9. Save user test record
                 var userExamDetails = new UserTestDetailsDM
                 {
                     UserId = userId,
@@ -512,7 +561,7 @@ namespace Intern.Services
                 await _context.UserTestDetails.AddAsync(userExamDetails);
                 await _context.SaveChangesAsync();
 
-                // ✅ 8. Prepare final response
+                // ✅ 10. Return final structured response
                 return new MockTestQuestionsResponseSM
                 {
                     UserTestId = userExamDetails.Id,
@@ -528,6 +577,159 @@ namespace Intern.Services
                 throw new AppException($"Error generating MCQs: {ex.Message}", HttpStatusCode.InternalServerError);
             }
         }
+
+
+
+
+        //public async Task<MockTestQuestionsResponseSM> GetSectionalMcqsByDepartmentAndPostId(int userId, int departmentId, int postId)
+        //{
+        //    try
+        //    {
+        //        // ✅ 1. Check user test limit
+        //        int userTestCount = await _context.UserTestDetails
+        //            .CountAsync(t => t.UserId == userId);
+
+        //        if (userTestCount >= _examConfig.MaxTestsPerUser)
+        //            throw new AppException(
+        //                $"You cannot attempt more than {_examConfig.MaxTestsPerUser} tests.",
+        //                HttpStatusCode.Forbidden
+        //            );
+
+        //        string loginId = _tokenHelper.GetLoginIdFromToken();
+
+        //        // ✅ 2. Validate Department & Post
+        //        var existingDept = await _deptService.GetByIdAsync(departmentId);
+        //        var existingPost = await _postSevice.GetByIdAsync(postId);
+
+        //        if (existingDept == null || existingPost == null)
+        //            throw new AppException("Department or post not found.", HttpStatusCode.NotFound);
+
+        //        // ✅ 3. Validate post belongs to department
+        //        bool isValidPost = await _context.DepartmentPosts
+        //            .AnyAsync(dp => dp.DepartmentId == departmentId && dp.PostId == postId);
+
+        //        if (!isValidPost)
+        //            throw new AppException("The specified post does not belong to this department.", HttpStatusCode.Conflict);
+
+        //        // ✅ 4. Get subjects linked to this post
+        //        var subjectIds = await _context.SubjectPosts
+        //            .Where(ps => ps.PostId == postId)
+        //            .Select(ps => ps.SubjectId)
+        //            .Distinct()
+        //            .ToListAsync();
+
+        //        if (!subjectIds.Any())
+        //            throw new AppException("No subjects found for the specified post.", HttpStatusCode.NotFound);
+
+        //        const int totalMcqs = 50;
+        //        int baseCountPerSubject = totalMcqs / subjectIds.Count;
+        //        int remaining = totalMcqs % subjectIds.Count;
+
+        //        var subjectMcqList = new List<SubjectMCQsSM>();
+        //        var extraMcqs = new List<MCQsSM>();
+
+        //        // ✅ 5. Loop each subject and fetch MCQs
+        //        foreach (var subjectId in subjectIds)
+        //        {
+        //            // MCQs mapped to post
+        //            var postMcqs = await (from m in _context.MCQs
+        //                                  join mps in _context.MCQPostSubjects on m.Id equals mps.MCQId
+        //                                  where mps.PostId == postId
+        //                                  select new MCQsSM
+        //                                  {
+        //                                      Id = m.Id,
+        //                                      Question = m.Question,
+        //                                      OptionA = m.OptionA,
+        //                                      OptionB = m.OptionB,
+        //                                      OptionC = m.OptionC,
+        //                                      OptionD = m.OptionD
+        //                                  })
+        //                                 .ToListAsync();
+
+        //            // MCQs mapped to subject
+        //            var subjectMcqs = await (from m in _context.MCQs
+        //                                     join mps in _context.MCQPostSubjects on m.Id equals mps.MCQId
+        //                                     where mps.SubjectId == subjectId
+        //                                     select new MCQsSM
+        //                                     {
+        //                                         Id = m.Id,
+        //                                         Question = m.Question,
+        //                                         OptionA = m.OptionA,
+        //                                         OptionB = m.OptionB,
+        //                                         OptionC = m.OptionC,
+        //                                         OptionD = m.OptionD
+        //                                     })
+        //                                    .ToListAsync();
+
+        //            // Combine & randomize
+        //            var mcqs = postMcqs
+        //                .Union(subjectMcqs)
+        //                .GroupBy(x => x.Id)
+        //                .Select(g => g.First())
+        //                .OrderBy(_ => Guid.NewGuid())
+        //                .ToList();
+
+        //            var selected = mcqs.Take(baseCountPerSubject).ToList();
+
+        //            if (selected.Count < baseCountPerSubject)
+        //            {
+        //                remaining += (baseCountPerSubject - selected.Count);
+        //            }
+        //            else if (selected.Count > baseCountPerSubject)
+        //            {
+        //                extraMcqs.AddRange(mcqs.Skip(baseCountPerSubject));
+        //            }
+
+        //            subjectMcqList.Add(new SubjectMCQsSM
+        //            {
+        //                Subject = new SubjectSM { Id = (int)subjectId },
+        //                MCQs = selected
+        //            });
+        //        }
+
+        //        // ✅ 6. Redistribute remaining questions
+        //        if (remaining > 0 && extraMcqs.Any())
+        //        {
+        //            var extras = extraMcqs.OrderBy(x => Guid.NewGuid()).Take(remaining).ToList();
+
+        //            if (subjectMcqList.Any())
+        //                subjectMcqList.First().MCQs.AddRange(extras);
+        //        }
+
+        //        int totalSelectedMcqs = subjectMcqList.Sum(s => s.MCQs.Count);
+
+        //        // ✅ 7. Save test details
+        //        var userExamDetails = new UserTestDetailsDM
+        //        {
+        //            UserId = userId,
+        //            TestTaken = true,
+        //            TotalQuestions = totalSelectedMcqs,
+        //            PostId = postId,
+        //            SubjectId = null,
+        //            MCQType = McqTypeDM.Post,
+        //            CreatedBy = loginId,
+        //            CreatedOnUtc = DateTime.UtcNow
+        //        };
+
+        //        await _context.UserTestDetails.AddAsync(userExamDetails);
+        //        await _context.SaveChangesAsync();
+
+        //        // ✅ 8. Prepare final response
+        //        return new MockTestQuestionsResponseSM
+        //        {
+        //            UserTestId = userExamDetails.Id,
+        //            SubjectMCQs = subjectMcqList
+        //        };
+        //    }
+        //    catch (AppException)
+        //    {
+        //        throw;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new AppException($"Error generating MCQs: {ex.Message}", HttpStatusCode.InternalServerError);
+        //    }
+        //}
 
 
 

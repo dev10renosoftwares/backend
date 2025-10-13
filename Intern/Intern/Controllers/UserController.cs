@@ -29,7 +29,6 @@ namespace Intern.Controllers
         {
            
             var user = await _userService.GetByIdAsync(id);
-            var tt = "This is testing for conflict in git";
             return ApiResponse<UserPerformanceSM>.SuccessResponse(user, "User fetched successfully");
         }
 
