@@ -203,7 +203,7 @@ namespace Intern.Services
                 new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Revenue").Id, PostId = posts.First(p => p.PostName == "Junior Assistant").Id, NotificationNumber = "REV-001", PostDate = DateTime.UtcNow },
                 new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Revenue").Id, PostId = posts.First(p => p.PostName == "Patwari").Id, NotificationNumber = "REV-002", PostDate = DateTime.Now.AddMonths(6) },
                 new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Revenue").Id, PostId = posts.First(p => p.PostName == "Naib Tehsildar").Id, NotificationNumber = "REV-003",PostDate = DateTime.Now.AddMonths(6)},
-                new DepartmentPostsDM { DepartmentId = departments.First(d => d.DepartmentName == "Revenue").Id, PostId = posts.First(p => p.PostName == "Naib Tehsildar").Id, NotificationNumber = "REV-003",PostDate = DateTime.UtcNow},
+           
 
                // ----------------- Health & Medical -----------------
                new DepartmentPostsDM{DepartmentId = departments.First(d => d.DepartmentName == "Health & Medical").Id,PostId = posts.First(p => p.PostName == "Staff Nurse").Id,NotificationNumber = "HLT-001",PostDate = DateTime.UtcNow},

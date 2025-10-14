@@ -122,11 +122,11 @@ namespace Intern.Common.Mapper
                  .ForMember(dest => dest.ImageBase64, opt => opt.Ignore())    // handled manually
                  .ForMember(dest => dest.TopPerformance, opt => opt.Ignore()); // set manually in service
 
-                CreateMap<PostDM, PostSM>()
-                .ForMember(dest => dest.PostName, opt => opt.MapFrom(src => src.PostName))
-                .ForMember(dest => dest.Description, opt => opt.Ignore())
-                .ForMember(dest => dest.PostDate, opt => opt.Ignore())
-                .ForMember(dest => dest.NotificationNumber, opt => opt.Ignore());
+                //CreateMap<PostDM, PostSM>()
+                //.ForMember(dest => dest.PostName, opt => opt.MapFrom(src => src.PostName))
+                ////.ForMember(dest => dest.Description, opt => opt.Ignore())
+                ////.ForMember(dest => dest.PostDate, opt => opt.Ignore())
+                ////.ForMember(dest => dest.NotificationNumber, opt => opt.Ignore());
 
                 // Subject mapping
                 CreateMap<SubjectDM, SubjectSM>();

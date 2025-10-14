@@ -120,7 +120,7 @@ namespace Intern.Services
              var encryptedToken = _encryptionHelper.Encrypt(emailVerification);
 
             // Build link
-             var verifyLink = $"https://yourdomain.com/verify-email?token={encryptedToken}";
+             var verifyLink = $"http://localhost:4200/verify-email?token={encryptedToken}";
 
             #region EmailBody
             var emailBody = $@"
@@ -233,7 +233,7 @@ namespace Intern.Services
 
             var encryptedToken = _encryptionHelper.Encrypt(emailVerification);
 
-            var verifyLink = $"https://yourdomain.com/verify-email?token={encryptedToken}";
+            var verifyLink = $"http://localhost:4200/verify-email?token={encryptedToken}";
 
             #region EmailBody
             var emailBody = $@"
@@ -603,7 +603,7 @@ namespace Intern.Services
 
             var authCode = _encryptionHelper.Encrypt(payload);
 
-            var frontendUrl = "https://myblogapp.com/reset-password";
+            var frontendUrl = "http://localhost:4200/reset-password";
             var resetLink = $"{frontendUrl}?authcode={Uri.EscapeDataString(authCode)}";
 
 
