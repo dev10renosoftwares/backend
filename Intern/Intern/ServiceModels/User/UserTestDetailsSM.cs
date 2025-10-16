@@ -20,5 +20,8 @@ namespace Intern.ServiceModels.User
 
         public bool TestTaken { get; set; }
         public bool TestSubmitted { get; set; }
+
+        // Question-level details
+        public List<UserTestQuestionSM> Questions { get; set; }
     }
 }

@@ -762,71 +762,148 @@ namespace Intern.Services
 
         public async Task<UserTestDetailsSM> GetTestResults(int id, MockTestQuestionsSM objSM)
         {
+            // 1️⃣ Check user existence
             var existingUser = await _context.ClientUsers
-               .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
+                .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
 
             if (existingUser == null)
-            {
                 throw new AppException("User details not Found", HttpStatusCode.Unauthorized);
-            }
 
-            try
-            {
-                var existingUserTest = await _context.UserTestDetails
+            // 2️⃣ Check user test existence
+            var existingUserTest = await _context.UserTestDetails
                 .FirstOrDefaultAsync(t => t.Id == objSM.UserTestId);
-                if (existingUserTest == null)
-                    throw new AppException("User test not found", HttpStatusCode.NotFound);
 
-                if (objSM.Questions.Count == 0)
-                    throw new AppException("No answers submitted", HttpStatusCode.BadRequest);
+            if (existingUserTest == null)
+                throw new AppException("User test not found", HttpStatusCode.NotFound);
 
-                if (objSM.Questions.Count != existingUserTest.TotalQuestions)
-                    throw new AppException("Malformed submission: question count mismatch", HttpStatusCode.BadRequest);
+            // 3️⃣ Validate submitted answers
+            if (objSM.Questions.Count == 0)
+                throw new AppException("No answers submitted", HttpStatusCode.BadRequest);
 
-                // 2️⃣ Calculate results
-                int rightAnswers = 0, wrongAnswers = 0, notAttempted = 0;
+            if (objSM.Questions.Count != existingUserTest.TotalQuestions)
+                throw new AppException("Malformed submission: question count mismatch", HttpStatusCode.BadRequest);
 
-                foreach (var mcq in objSM.Questions)
+            // 4️⃣ Initialize counters
+            int rightAnswers = 0, wrongAnswers = 0, notAttempted = 0;
+            var questionResults = new List<UserTestQuestionSM>();
+
+            // 5️⃣ Loop through submitted questions
+            foreach (var mcq in objSM.Questions)
+            {
+                var result = await IsCorrectAnswer(mcq); // Right/Wrong/NotAttempted
+
+                switch (result)
                 {
-                    var result = await IsCorrectAnswer(mcq); // returns Right/Wrong/NotAttempted
-                    switch (result)
-                    {
-                        case AnswerResultSM.Right:
-                            rightAnswers++;
-                            break;
-                        case AnswerResultSM.Wrong:
-                            wrongAnswers++;
-                            break;
-                        case AnswerResultSM.NotAttempted:
-                            notAttempted++;
-                            break;
-                        default:
-
-                            break;
-                    }
+                    case AnswerResultSM.Right: rightAnswers++; break;
+                    case AnswerResultSM.Wrong: wrongAnswers++; break;
+                    case AnswerResultSM.NotAttempted: notAttempted++; break;
                 }
 
-                string LoginId = _tokenHelper.GetLoginIdFromToken();
-                // 3️⃣ Update test record
-                existingUserTest.RightAnswered = rightAnswers;
-                existingUserTest.WrongAnswered = wrongAnswers;
-                existingUserTest.NotAttempted = notAttempted;
-                existingUserTest.TestSubmitted = true;
-                existingUserTest.LastModifiedBy = LoginId;
-                existingUserTest.LastModifiedOnUtc = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                // 4️⃣ Map back to SM
-                return _mapper.Map<UserTestDetailsSM>(existingUserTest);
+                // Fetch question details from DB
+                var questionFromDb = await _context.MCQs.FirstOrDefaultAsync(q => q.Id == mcq.Id);
+                if (questionFromDb != null)
+                {
+                    questionResults.Add(new UserTestQuestionSM
+                    {
+                        QuestionId = mcq.Id,
+                        QuestionText = questionFromDb.Question,
+                        OptionA = questionFromDb.OptionA,
+                        OptionB = questionFromDb.OptionB,
+                        OptionC = questionFromDb.OptionC,
+                        OptionD = questionFromDb.OptionD,
+                        UserAnswer = string.IsNullOrEmpty(mcq.Answer) ? null : mcq.Answer,
+                        ActualAnswer = questionFromDb.Answer,
+                        IsUserAnswerCorrect = result == AnswerResultSM.NotAttempted
+                            ? null
+                            : result == AnswerResultSM.Right
+                    });
+                }
             }
-            catch(Exception e)
-            {
-                throw;
-            }
 
-            
+            // 6️⃣ Update test summary
+            string LoginId = _tokenHelper.GetLoginIdFromToken();
+            existingUserTest.RightAnswered = rightAnswers;
+            existingUserTest.WrongAnswered = wrongAnswers;
+            existingUserTest.NotAttempted = notAttempted;
+            existingUserTest.TestSubmitted = true;
+            existingUserTest.LastModifiedBy = LoginId;
+            existingUserTest.LastModifiedOnUtc = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            // 7️⃣ Map summary + attach question-level results
+            var response = _mapper.Map<UserTestDetailsSM>(existingUserTest);
+            response.Questions = questionResults;
+
+            return response;
         }
+
+
+        //public async Task<UserTestDetailsSM> GetTestResults(int id, MockTestQuestionsSM objSM)
+        //{
+        //    var existingUser = await _context.ClientUsers
+        //       .FirstOrDefaultAsync(u => u.Id == id && u.IsActive);
+
+        //    if (existingUser == null)
+        //    {
+        //        throw new AppException("User details not Found", HttpStatusCode.Unauthorized);
+        //    }
+
+        //    try
+        //    {
+        //        var existingUserTest = await _context.UserTestDetails
+        //        .FirstOrDefaultAsync(t => t.Id == objSM.UserTestId);
+        //        if (existingUserTest == null)
+        //            throw new AppException("User test not found", HttpStatusCode.NotFound);
+
+        //        if (objSM.Questions.Count == 0)
+        //            throw new AppException("No answers submitted", HttpStatusCode.BadRequest);
+
+        //        if (objSM.Questions.Count != existingUserTest.TotalQuestions)
+        //            throw new AppException("Malformed submission: question count mismatch", HttpStatusCode.BadRequest);
+
+        //        // 2️⃣ Calculate results
+        //        int rightAnswers = 0, wrongAnswers = 0, notAttempted = 0;
+
+        //        foreach (var mcq in objSM.Questions)
+        //        {
+        //            var result = await IsCorrectAnswer(mcq); // returns Right/Wrong/NotAttempted
+        //            switch (result)
+        //            {
+        //                case AnswerResultSM.Right:
+        //                    rightAnswers++;
+        //                    break;
+        //                case AnswerResultSM.Wrong:
+        //                    wrongAnswers++;
+        //                    break;
+        //                case AnswerResultSM.NotAttempted:
+        //                    notAttempted++;
+        //                    break;
+        //                default:
+
+        //                    break;
+        //            }
+        //        }
+
+        //        string LoginId = _tokenHelper.GetLoginIdFromToken();
+        //        // 3️⃣ Update test record
+        //        existingUserTest.RightAnswered = rightAnswers;
+        //        existingUserTest.WrongAnswered = wrongAnswers;
+        //        existingUserTest.NotAttempted = notAttempted;
+        //        existingUserTest.TestSubmitted = true;
+        //        existingUserTest.LastModifiedBy = LoginId;
+        //        existingUserTest.LastModifiedOnUtc = DateTime.UtcNow;
+
+        //        await _context.SaveChangesAsync();
+
+        //        // 4️⃣ Map back to SM
+        //        return _mapper.Map<UserTestDetailsSM>(existingUserTest);
+        //    }
+        //    catch(Exception e)
+        //    {
+        //        throw;
+        //    }   
+        //}
 
 
         public async Task<MockTestQuestionsSM> GetMCQsBySubjectAsync(int userId, int subjectId)

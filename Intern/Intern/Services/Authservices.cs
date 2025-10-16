@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Intern.ServiceModels.Enums;
+using Intern.ServiceModels.User;
 
 namespace Intern.Services
 {
@@ -168,7 +169,7 @@ namespace Intern.Services
             await _emailService.SendEmailAsync(
                 user.Email,
                 "Verify your email",
-                emailBody
+                emailBody 
             );
 
             return "Signup successful! Please check your email to verify your account.";
@@ -343,6 +344,7 @@ namespace Intern.Services
 
             object? dbUser = null;
             string? imagePath = null;
+            bool isPasswordPresent = false;
 
             // 1. Fetch user from DB based on role
             switch (loginSM.Role)
@@ -354,6 +356,9 @@ namespace Intern.Services
 
                     if (appUser == null)
                         throw new AppException("User Not Found", HttpStatusCode.Unauthorized);
+
+                    // Check password existence
+                    isPasswordPresent = !string.IsNullOrEmpty(appUser.Password);
 
                     if (string.IsNullOrEmpty(appUser.Password))
                         throw new AppException("Social login used. Set a profile password for custom login", HttpStatusCode.BadRequest);
@@ -371,6 +376,12 @@ namespace Intern.Services
                 case UserRoleSM.ClientEmployee:
                     var clientUser = await _Context.ClientUsers
                         .FirstOrDefaultAsync(x => x.LoginId == loginSM.Email || x.Email == loginSM.Email);
+
+                    if(clientUser.IsEmailConfirmed == false)
+                        throw new AppException("Please verify your email address before logging in.", HttpStatusCode.Conflict);
+
+                    // Check password existence
+                    isPasswordPresent = !string.IsNullOrEmpty(clientUser.Password);
 
                     if (clientUser == null)
                         throw new AppException("User Not Found", HttpStatusCode.Unauthorized);
@@ -414,6 +425,7 @@ namespace Intern.Services
             responseSM.ImagePath = userSM.ImageBase64;
             responseSM.Token = new JwtSecurityTokenHandler().WriteToken(token);
             responseSM.Expiration = token.ValidTo;
+            responseSM.IsPasswordPresent = isPasswordPresent;
 
             return responseSM;
         }
@@ -528,6 +540,9 @@ namespace Intern.Services
                 var response = _mapper.Map<LoginResponseSM>(clientUser);
                 response.Token = new JwtSecurityTokenHandler().WriteToken(token);
                 response.Expiration = token.ValidTo;
+
+                // ✅ 6. Set IsPasswordPresent based on DB record
+                response.IsPasswordPresent = !string.IsNullOrEmpty(clientUser.Password);
 
                 if (!string.IsNullOrEmpty(clientUser.ImagePath) && File.Exists(clientUser.ImagePath))
                 {
@@ -692,8 +707,31 @@ namespace Intern.Services
 
             return "Password reset successful";
         }
+
+        public async Task<string> SetPasswordAsync(int userId, SetPasswordSM model)
+        {
+
+            if (model.Password != model.ConfirmPassword)
+                throw new AppException("Password and Confirm Password do not match.", HttpStatusCode.BadRequest);
+
+            var user = await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+                throw new AppException("User not found.", HttpStatusCode.NotFound);
+
+            var loginid = _tokenhelper.GetLoginIdFromToken();
+
+            user.Password = _passwordHelper.HashPassword(model.Password);
+            user.LastModifiedOnUtc = DateTime.UtcNow;
+            user.LastModifiedBy = loginid;
+
+            _Context.ClientUsers.Update(user);
+            await _Context.SaveChangesAsync();
+
+            return "Password has been set successfully.";
+        }
+
     }
- }
+}
 
 
 

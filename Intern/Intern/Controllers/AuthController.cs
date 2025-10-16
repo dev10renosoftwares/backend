@@ -2,6 +2,7 @@
 using Intern.Common.Helpers;
 using Intern.ServiceModels;
 using Intern.ServiceModels.BaseServiceModels;
+using Intern.ServiceModels.User;
 using Intern.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -153,7 +154,7 @@ namespace Intern.Controllers
             }
             var message = await _authservices.ChangePassword(userId, changePasswordSM);
 
-            return ApiResponse<string>.SuccessResponse(message);
+            return ApiResponse<string>.SuccessResponse(null,message);
         }
         [HttpPost("forgotpassword")]
         public async Task<ApiResponse<string>> ForgotPassword( string email)
@@ -182,15 +183,23 @@ namespace Intern.Controllers
 
                 throw new AppException(string.Join(" | ", errors), HttpStatusCode.BadRequest);
             }
-
-
-            
                 var message = await _authservices.ResetPasswordAsync(resetPasswordSM);
 
                return ApiResponse<string>.SuccessResponse(null,message);
+        }
 
-           
-        } 
+        [Authorize]
+        [HttpPost("setpassword")]
+        public async Task<ApiResponse<string>> SetPassword(SetPasswordSM model)
+        {
+
+            // 2️⃣ Get logged-in user ID from JWT
+            int userId = _tokenHelper.GetUserIdFromToken();
+
+            var message = await _authservices.SetPasswordAsync(userId, model);
+            return ApiResponse<string>.SuccessResponse(null, message);
+        }
+
 
 
 

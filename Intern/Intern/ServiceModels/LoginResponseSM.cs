@@ -26,5 +26,7 @@ namespace Intern.ServiceModels
         public string? CreatedBy { get; set; }
         public DateTime? LastModifiedOnUtc { get; set; }
         public string? LastModifiedBy { get; set; }
+
+        public bool IsPasswordPresent { get; set; }
     }
 }
