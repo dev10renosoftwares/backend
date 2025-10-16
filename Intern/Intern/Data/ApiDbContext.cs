@@ -36,6 +36,10 @@ namespace Intern.Data
         public DbSet<NotificationsDM> Notifications { get; set; }
 
         public DbSet<UserTestDetailsDM> UserTestDetails { get; set; }
+        public DbSet<SyllabusDM> Syllabus { get; set; }
+        public DbSet<PostSyllabusDM> PostSyllabus { get; set; }
+        public DbSet<PapersDM> PreviousYearPapers { get; set; }
+        public DbSet<PostPapersDM> PostPreviousYearPapers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -85,9 +85,9 @@ namespace Intern.Controllers
         [Authorize(Roles = "SuperAdmin")]
         [HttpPost("remove-posts")]
 
-        public async Task<ApiResponse<string>> RemovepostsfromDepartment([FromBody] RemovepostsfromDepartmentSM removepostsfromDepartment)
+        public async Task<ApiResponse<string>> RemovepostsfromDepartment(int departmentPostId)
         {
-          var success =  await _service.RemovepostsfromDepartmentAsync(removepostsfromDepartment);
+          var success =  await _service.RemovepostsfromDepartmentAsync(departmentPostId);
             if (!success)
                 return ApiResponse<string>.ErrorResponse("Failed to remove subject from post");
 

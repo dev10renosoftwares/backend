@@ -3,11 +3,9 @@ using Common.Helpers;
 using Intern.Data;
 using Intern.DataModels.Exams;
 using Intern.ServiceModels;
-using System.Net;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Intern.ServiceModels.Exams;
-using Intern.ServiceModels.BaseServiceModels;
+using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace Intern.Services
 {
@@ -33,6 +31,19 @@ namespace Intern.Services
             var entity = await _context.Posts.FindAsync(id);
             if (entity == null) return null;
             return _mapper.Map<PostSM>(entity);
+        }
+        public async Task<PostDetailsSM> GetPostDetails(int id, int userId)
+        {
+            var postDM = await _context.Posts.FindAsync(id);
+            var postSyllabus = await _context.PostSyllabus.Where(x => x.PostId == id).Select(x=>x.SyllabusId).ToListAsync();
+            var syllabus = await _context.Syllabus.Where(x => postSyllabus.Contains(x.Id)).ToListAsync();
+            var postPapers = await _context.PostPreviousYearPapers.Where(x => x.PostId == id).Select(x=>x.PaperId).ToListAsync();
+            var papers = await _context.PreviousYearPapers.Where(x => postPapers.Contains(x.Id)).ToListAsync();
+            var notificationsDM = await _context.Notifications.Where(x => x.PostId == id).ToListAsync();
+            var userPerformance = await _context.UserTestDetails.Where(x => x.PostId == id && x.UserId == userId).ToListAsync();
+
+            return new PostDetailsSM();
+
         }
 
         public async Task<(PostSM? Post, int? DeptPostId)> GetDeptPostDetails(int deptid, int postId)

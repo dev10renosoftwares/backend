@@ -128,11 +128,11 @@ namespace Intern.Services
             }
             
         }
-        public async Task<bool> RemovepostsfromDepartmentAsync(RemovepostsfromDepartmentSM removeposts)
+        public async Task<bool> RemovepostsfromDepartmentAsync(int departmentPostId)
         {
-            var departmentpost = await _context.DepartmentPosts.FindAsync(removeposts.DepartmentPostId);
+            var departmentpost = await _context.DepartmentPosts.FindAsync(departmentPostId);
             if (departmentpost == null)
-                throw new AppException($"Departmentpost with Id {removeposts.DepartmentPostId} not found.", HttpStatusCode.NotFound);
+                throw new AppException($"Departmentpost with Id {departmentPostId} not found.", HttpStatusCode.NotFound);
 
             _context.DepartmentPosts.Remove(departmentpost);
             await _context.SaveChangesAsync();
