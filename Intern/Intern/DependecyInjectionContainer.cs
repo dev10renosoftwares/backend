@@ -31,6 +31,9 @@ namespace Intern.DependencyInjection
             services.AddScoped<PasswordHelper>();
             services.AddScoped<TokenHelper>();
             services.AddScoped<DatabaseProcess>();
+            services.AddScoped<PapersService>();
+            services.AddScoped<SyllabusService>();
+            services.AddScoped<GoogleDriveService>();
            
             
         }

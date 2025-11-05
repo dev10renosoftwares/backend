@@ -98,7 +98,7 @@ namespace Intern.Controllers
             return ApiResponse<string>.SuccessResponse(null, "MCQ assigned successfully");
         }
 
-        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]
+        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]  
         [HttpGet("get-mcqs")]
         public async Task<ApiResponse<MockTestQuestionsResponseSM>> GetAllMCQs(int postId, int departmentId)
         {

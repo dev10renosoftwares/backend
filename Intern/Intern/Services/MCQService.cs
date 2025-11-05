@@ -310,74 +310,74 @@ namespace Intern.Services
             throw new AppException("Something went wrong while assigning MCQ", HttpStatusCode.BadRequest);
         }
 
-        public async Task<MockTestQuestionsSM> GetMCQsByDepartmentAndPostAsync(int userId, int departmentId, int postId)
-        {
+        //public async Task<MockTestQuestionsSM> GetMCQsByDepartmentAndPostAsync(int userId, int departmentId, int postId)
+        //{
 
-            // ✅ Check max tests per user
-            int userTestCount = await _context.UserTestDetails
-                .CountAsync(t => t.UserId == userId);
+        //    // ✅ Check max tests per user
+        //    int userTestCount = await _context.UserTestDetails
+        //        .CountAsync(t => t.UserId == userId);
 
-            if (userTestCount >= _examConfig.MaxTestsPerUser)
-                throw new AppException(
-                    $"You cannot attempt more than {_examConfig.MaxTestsPerUser} tests.",
-                    HttpStatusCode.Forbidden
-                );
+        //    if (userTestCount >= _examConfig.MaxTestsPerUser)
+        //        throw new AppException(
+        //            $"You cannot attempt more than {_examConfig.MaxTestsPerUser} tests.",
+        //            HttpStatusCode.Forbidden
+        //        );
 
-            string LoginId = _tokenHelper.GetLoginIdFromToken();
-            // 1️⃣ Validate Department and Post
-            var existingDept = await _deptService.GetByIdAsync(departmentId);
-            var existingPost = await _postSevice.GetByIdAsync(postId);
+        //    string LoginId = _tokenHelper.GetLoginIdFromToken();
+        //    // 1️⃣ Validate Department and Post
+        //    var existingDept = await _deptService.GetByIdAsync(departmentId);
+        //    var existingPost = await _postSevice.GetByIdAsync(postId);
 
-            if (existingDept == null || existingPost == null)
-                throw new AppException("Department or post is not found", HttpStatusCode.NotFound);
+        //    if (existingDept == null || existingPost == null)
+        //        throw new AppException("Department or post is not found", HttpStatusCode.NotFound);
 
-            // 2️⃣ Validate Post belongs to Department
-            var isValidPost = await _context.DepartmentPosts
-                .AnyAsync(dp => dp.DepartmentId == departmentId && dp.PostId == postId);
+        //    // 2️⃣ Validate Post belongs to Department
+        //    var isValidPost = await _context.DepartmentPosts
+        //        .AnyAsync(dp => dp.DepartmentId == departmentId && dp.PostId == postId);
 
-            if (!isValidPost)
-                throw new AppException("The specified post does not belong to this department.", HttpStatusCode.Conflict);
+        //    if (!isValidPost)
+        //        throw new AppException("The specified post does not belong to this department.", HttpStatusCode.Conflict);
 
-            // 3️⃣ Fetch MCQs directly with join and random order (single query)
-            var mcqs = await (from m in _context.MCQs
-                              join mps in _context.MCQPostSubjects
-                                  on m.Id equals mps.MCQId
-                              where mps.PostId == postId
-                              orderby Guid.NewGuid() 
-                              select m)
-                             .Take(50) 
-                             .ToListAsync();
+        //    // 3️⃣ Fetch MCQs directly with join and random order (single query)
+        //    var mcqs = await (from m in _context.MCQs
+        //                      join mps in _context.MCQPostSubjects
+        //                          on m.Id equals mps.MCQId
+        //                      where mps.PostId == postId
+        //                      orderby Guid.NewGuid() 
+        //                      select m)
+        //                     .Take(50) 
+        //                     .ToListAsync();
 
-            // 4️⃣ Map to Service Model
-            var mcqsSM = _mapper.Map<List<MCQsSM>>(mcqs);
+        //    // 4️⃣ Map to Service Model
+        //    var mcqsSM = _mapper.Map<List<MCQsSM>>(mcqs);
 
-            // 5️⃣ Hide answers and explanations for exam purposes    
-            foreach (var mcq in mcqsSM)
-            {
-                mcq.Answer = null;
-                mcq.Explanation = null;
-            }
-            var userExamDetails = new UserTestDetailsDM
-            {
-                UserId = userId,
-                TestTaken = true,
-                TotalQuestions = mcqsSM.Count,
-                PostId = postId,
-                SubjectId = null,
-                MCQType = McqTypeDM.Post,
-                CreatedBy = LoginId,
-                CreatedOnUtc = DateTime.UtcNow,
-            };
-            await _context.UserTestDetails.AddAsync(userExamDetails);
-            await _context.SaveChangesAsync();
+        //    // 5️⃣ Hide answers and explanations for exam purposes    
+        //    foreach (var mcq in mcqsSM)
+        //    {
+        //        mcq.Answer = null;
+        //        mcq.Explanation = null;
+        //    }
+        //    var userExamDetails = new UserTestDetailsDM
+        //    {
+        //        UserId = userId,
+        //        TestTaken = true,
+        //        TotalQuestions = mcqsSM.Count,
+        //        PostId = postId,
+        //        SubjectId = null,
+        //        MCQType = McqTypeDM.Post,
+        //        CreatedBy = LoginId,
+        //        CreatedOnUtc = DateTime.UtcNow,
+        //    };
+        //    await _context.UserTestDetails.AddAsync(userExamDetails);
+        //    await _context.SaveChangesAsync();
 
-            return new MockTestQuestionsSM
-            {
-                UserTestId = userExamDetails.Id,
-                Questions = mcqsSM,
-            };
+        //    return new MockTestQuestionsSM
+        //    {
+        //        UserTestId = userExamDetails.Id,
+        //        Questions = mcqsSM,
+        //    };
                 
-        }
+        //}
 
         public async Task<MockTestQuestionsResponseSM> GetSectionalMcqsByDepartmentAndPostId(int userId, int departmentId, int postId)
         {

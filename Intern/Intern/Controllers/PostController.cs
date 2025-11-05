@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Intern.ServiceModels.Exams;
 using Common.Helpers;
 using System.Net;
+using Intern.Common.Helpers;
+using Intern.DataModels.Exams;
 
 namespace Intern.Controllers
 {
@@ -15,10 +17,12 @@ namespace Intern.Controllers
     public class PostController : ControllerBase
     {
         private readonly PostService _postService;
+        private readonly TokenHelper _tokenHelper;
 
-        public PostController(PostService postService)
+        public PostController(PostService postService,TokenHelper tokenHelper)
         {
             _postService = postService;
+            _tokenHelper = tokenHelper;
         }
 
         [Authorize(Roles = "SuperAdmin,SystemAdmin")]
@@ -38,6 +42,19 @@ namespace Intern.Controllers
                 return ApiResponse<PostSM>.ErrorResponse("Post not found");
 
             return ApiResponse<PostSM>.SuccessResponse(result, "Post fetched successfully");
+        }
+        
+        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]
+        [HttpGet("details/{postId}")]
+        public async Task<ApiResponse<PostDetailsSM>> GetPostDetails(int postId)
+        {
+            int userId = _tokenHelper.GetUserIdFromToken();
+
+            var result = await _postService.GetPostDetailsAsync(postId,userId);
+            if (result == null)
+                return ApiResponse<PostDetailsSM>.ErrorResponse("Post not found");
+
+            return ApiResponse<PostDetailsSM>.SuccessResponse(result, "Post fetched successfully");
         }
 
        
@@ -90,6 +107,24 @@ namespace Intern.Controllers
 
             return ApiResponse<string>.SuccessResponse(null, result);
         }
+
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpPost("assign-previouspapers")]
+        public async Task<ApiResponse<string>> AssignPreviousPapers([FromBody] List<PostPapersSM> model)
+         {
+             await _postService.AssignPreviousPapersAsync(model);
+            return ApiResponse<string>.SuccessResponse(null, "Previous year papers assigned successfully");
+        }
+
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpPost("assign-syllabus")]
+        public async Task<ApiResponse<string>> AssignSyllabus([FromBody] List<PostSyllabusSM> model)
+        {
+            await _postService.AssignPostSyllabusAsync(model);
+            return ApiResponse<string>.SuccessResponse(null, "Syllabus assigned successfully");
+        }
+
+
 
 
     }

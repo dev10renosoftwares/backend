@@ -34,7 +34,6 @@ namespace Intern.Data
         public DbSet<SubjectPostDM> SubjectPosts { get; set; }
         public DbSet<MCQPostSubjectDM> MCQPostSubjects { get; set; }
         public DbSet<NotificationsDM> Notifications { get; set; }
-
         public DbSet<UserTestDetailsDM> UserTestDetails { get; set; }
         public DbSet<SyllabusDM> Syllabus { get; set; }
         public DbSet<PostSyllabusDM> PostSyllabus { get; set; }

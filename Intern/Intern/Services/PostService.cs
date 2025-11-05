@@ -4,6 +4,7 @@ using Intern.Data;
 using Intern.DataModels.Exams;
 using Intern.ServiceModels;
 using Intern.ServiceModels.Exams;
+using Intern.ServiceModels.User;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
@@ -13,38 +14,78 @@ namespace Intern.Services
     {
         private readonly ApiDbContext _context;
         private readonly IMapper _mapper;
+        private readonly SyllabusService _syllabusService;
+        private readonly PapersService _papersService;
+       
 
-        public PostService(ApiDbContext context, IMapper mapper)
+        public PostService(ApiDbContext context, IMapper mapper,SyllabusService syllabusService,PapersService papersService)
         {
             _context = context;
             _mapper = mapper;
+            _syllabusService = syllabusService;
+            _papersService = papersService;
+           
         }
 
         public async Task<IEnumerable<PostSM>> GetAllAsync()
         {
             var entities = await _context.Posts.ToListAsync();
             return _mapper.Map<List<PostSM>>(entities);
+
         }
 
         public async Task<PostSM?> GetByIdAsync(int id)
         {
-            var entity = await _context.Posts.FindAsync(id);
+            var entity = await _context.Posts.FindAsync(id);  
             if (entity == null) return null;
             return _mapper.Map<PostSM>(entity);
         }
-        public async Task<PostDetailsSM> GetPostDetails(int id, int userId)
+        public async Task<PostDetailsSM> GetPostDetailsAsync(int postid, int userId)
         {
-            var postDM = await _context.Posts.FindAsync(id);
-            var postSyllabus = await _context.PostSyllabus.Where(x => x.PostId == id).Select(x=>x.SyllabusId).ToListAsync();
-            var syllabus = await _context.Syllabus.Where(x => postSyllabus.Contains(x.Id)).ToListAsync();
-            var postPapers = await _context.PostPreviousYearPapers.Where(x => x.PostId == id).Select(x=>x.PaperId).ToListAsync();
-            var papers = await _context.PreviousYearPapers.Where(x => postPapers.Contains(x.Id)).ToListAsync();
-            var notificationsDM = await _context.Notifications.Where(x => x.PostId == id).ToListAsync();
-            var userPerformance = await _context.UserTestDetails.Where(x => x.PostId == id && x.UserId == userId).ToListAsync();
+            var postSM = await GetByIdAsync(postid);
+            var syllabusListSM = await _syllabusService.GetSyllabusByPostIdAsync(postid);
+            var papersListSM = await _papersService.GetPapersByPostIdAsync(postid);
+            var notificationsListSM = await GetNotificationsByPostIdAsync(postid);
+            var userPerformance = await GetUserPerformanceAsync(postid, userId);
 
-            return new PostDetailsSM();
+            var postDetailsSM = new PostDetailsSM
+            {
+                Post = postSM,
+                Syllabus = syllabusListSM,
+                PreviousYearPapers = papersListSM,
+                Notifications = notificationsListSM,
+                UserPerformance = userPerformance
+            };
+
+            return postDetailsSM;
 
         }
+
+        public async Task<List<UserTestPerformanceSM>> GetUserPerformanceAsync(int postId, int userId)
+        {
+            var testDetailsDM = await _context.UserTestDetails
+                .Where(x => x.PostId == postId && x.UserId == userId)
+                .OrderByDescending(x => x.CreatedOnUtc)
+                .ToListAsync();
+
+            // Map to UserTestPerformanceSM using AutoMapper
+            var performanceSM = _mapper.Map<List<UserTestPerformanceSM>>(testDetailsDM);
+
+            return performanceSM;
+        }
+
+        #region GetNotificationsbyPostId
+        public async Task<List<NotificationsSM>> GetNotificationsByPostIdAsync(int postId)
+        {
+            var notificationsDM = await _context.Notifications
+                .Where(x => x.PostId == postId)
+                .OrderByDescending(x => x.CreatedOnUtc)
+                .ToListAsync();
+
+            return _mapper.Map<List<NotificationsSM>>(notificationsDM);
+        }
+
+        #endregion
 
         public async Task<(PostSM? Post, int? DeptPostId)> GetDeptPostDetails(int deptid, int postId)
         {
@@ -187,6 +228,100 @@ namespace Intern.Services
 
             return "Post created and assigned successfully.";
         }
+
+        public async Task AssignPreviousPapersAsync(List<PostPapersSM> models)
+        {
+            if (models == null || !models.Any())
+                throw new AppException("No previous year papers provided.", HttpStatusCode.BadRequest);
+
+            var postId = models.First().PostId;
+
+            // 1️⃣ Validate Post
+            var postExists = await _context.Posts.AnyAsync(p => p.Id == postId);
+            if (!postExists)
+                throw new AppException($"Post with Id {postId} does not exist.", HttpStatusCode.NotFound);
+
+            var entitiesToAdd = new List<PostPapersDM>();
+
+            foreach (var paper in models)
+            {
+                // 2️⃣ Validate each paper
+                if (paper.PreviousYearPapersId <= 0)
+                    throw new AppException("Invalid PreviousYearPaperId in one of the items.", HttpStatusCode.BadRequest);
+
+                // ✅ Validate ExamYear is not in the future
+                if (paper.ExamYear > DateTime.UtcNow)
+                    throw new AppException("ExamYear cannot be in the future.", HttpStatusCode.BadRequest);
+
+                // 3️⃣ Check if Previous Year Paper exists
+                var paperExists = await _context.PreviousYearPapers
+                    .AnyAsync(p => p.Id == paper.PreviousYearPapersId);
+                if (!paperExists)
+                    throw new AppException($"Previous year paper with Id {paper.PreviousYearPapersId} does not exist.", HttpStatusCode.NotFound);
+
+                // 4️⃣ Check for duplicates
+                var alreadyAssigned = await _context.PostPreviousYearPapers
+                    .AnyAsync(pp => pp.PostId == paper.PostId && pp.PreviousYearPapersId == paper.PreviousYearPapersId);
+                if (alreadyAssigned)
+                    continue; // skip already assigned
+
+                // 5️⃣ Map SM → DM using AutoMapper
+                var entity = _mapper.Map<PostPapersDM>(paper);
+                entitiesToAdd.Add(entity);
+            }
+
+            if (!entitiesToAdd.Any())
+                throw new AppException("All provided papers were already assigned to this post.", HttpStatusCode.Conflict);
+
+            // 6️⃣ Add all entities in batch
+            _context.PostPreviousYearPapers.AddRange(entitiesToAdd);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AssignPostSyllabusAsync(List<PostSyllabusSM> models)
+        {
+            if (models == null || !models.Any())
+                throw new AppException("No syllabus data provided.", HttpStatusCode.BadRequest);
+
+            var postId = models.First().PostId;
+
+            // 1️⃣ Validate Post
+            var postExists = await _context.Posts.AnyAsync(p => p.Id == postId);
+            if (!postExists)
+                throw new AppException($"Post with Id {postId} does not exist.", HttpStatusCode.NotFound);
+
+            var entitiesToAdd = new List<PostSyllabusDM>();
+
+            foreach (var item in models)
+            {
+                // 2️⃣ Validate SyllabusId
+                if (item.SyllabusId <= 0)
+                    throw new AppException("Invalid SyllabusId in one of the items.", HttpStatusCode.BadRequest);
+
+                
+                var syllabusExists = await _context.Syllabus.AnyAsync(s => s.Id == item.SyllabusId);
+                if (!syllabusExists)
+                    throw new AppException($"Syllabus with Id {item.SyllabusId} does not exist.", HttpStatusCode.NotFound);
+
+                // 5️⃣ Check for duplicate assignment
+                var alreadyAssigned = await _context.PostSyllabus
+                    .AnyAsync(ps => ps.PostId == item.PostId && ps.SyllabusId == item.SyllabusId && ps.YearOfExam == item.YearOfExam);
+                if (alreadyAssigned)
+                    continue; // Skip duplicates
+
+                // 6️⃣ Map SM → DM
+                var entity = _mapper.Map<PostSyllabusDM>(item);
+                entitiesToAdd.Add(entity);
+            }
+
+            if (!entitiesToAdd.Any())
+                throw new AppException("All provided syllabus entries were already assigned to this post.", HttpStatusCode.Conflict);
+
+            // 7️⃣ Add all in batch
+            _context.PostSyllabus.AddRange(entitiesToAdd);
+            await _context.SaveChangesAsync();
+        }
+
 
     }
 }

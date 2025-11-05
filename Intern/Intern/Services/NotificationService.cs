@@ -51,6 +51,8 @@ namespace Intern.Services
 
         #endregion ALL Notifications
 
+       
+
         #region Get By Post and DepartmentId
 
         #region ALL notifications of Department post

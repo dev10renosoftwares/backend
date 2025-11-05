@@ -3,8 +3,49 @@
     public class ImageHelper
     {
 
+        public async Task<string> SaveBase64FileAsync2(string base64File, string saveFolder, string extension)
+        {
+            if (string.IsNullOrEmpty(base64File))
+                return null;
+
+            // Remove "data:application/pdf;base64," or "data:image/png;base64," part if exists
+            var base64Data = base64File.Contains(",")
+                ? base64File.Split(',')[1]
+                : base64File;
+
+            byte[] fileBytes;
+            try
+            {
+                fileBytes = Convert.FromBase64String(base64Data);
+            }
+            catch
+            {
+                return null; // Invalid base64 string
+            }
+
+            // Create folder if missing
+            if (!Directory.Exists(saveFolder))
+                Directory.CreateDirectory(saveFolder);
+
+            // Generate unique file name with correct extension
+            var fileName = $"{Guid.NewGuid()}.{extension}";
+            var filePath = Path.Combine(saveFolder, fileName);
+
+            try
+            {
+                await File.WriteAllBytesAsync(filePath, fileBytes);
+            }
+            catch
+            {
+                return null; // File write failed
+            }
+
+            return filePath;
+        }
+
+
         // Save base64 string as image file
-      
+
         public async Task<string> SaveBase64ImageAsync(string base64Image, string saveFolder)
         {
             if (string.IsNullOrEmpty(base64Image))

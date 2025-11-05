@@ -209,12 +209,8 @@ namespace Intern.Services
             {
                 
                 throw;
-            }
-
-
-            
+            }    
         }
-
         public async Task<string> ResendVerificationEmailAsync(string email)
         {
             var user = await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == email);

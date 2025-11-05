@@ -10,7 +10,7 @@ namespace Intern.ServiceModels.Exams
 
         public List<PapersSM> PreviousYearPapers { get; set; }
 
-        public List<UserTestDetailsSM> UserPerformance { get; set; }
+        public List<UserTestPerformanceSM> UserPerformance { get; set; }
 
         public List<NotificationsSM> Notifications { get; set; }
     }

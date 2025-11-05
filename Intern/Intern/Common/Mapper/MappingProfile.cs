@@ -139,6 +139,31 @@ namespace Intern.Common.Mapper
 
                 CreateMap<AddSubjectandAssignSM, SubjectDM>();
 
+                // 🔹 Syllabus
+                CreateMap<SyllabusDM, SyllabusSM>().ReverseMap();
+
+                // 🔹 Papers
+              //  CreateMap<PapersDM, PapersSM>().ReverseMap();
+
+                CreateMap<UserTestDetailsDM, UserTestPerformanceSM>()
+                .ForMember(dest => dest.TestTakenOnDate, opt => opt.MapFrom(src => src.CreatedOnUtc))
+                .ReverseMap();
+
+                CreateMap<PapersDM, PapersSM>()
+                    .ReverseMap()
+                    .ForMember(dest => dest.Id, opt => opt.Ignore())
+                    .ForMember(dest => dest.CreatedOnUtc, opt => opt.Ignore())
+                    .ForMember(dest => dest.CreatedBy, opt => opt.Ignore());
+
+                // SM ↔ DM mapping using ReverseMap
+                CreateMap<PostPapersSM, PostPapersDM>()
+                    .ReverseMap();
+
+                CreateMap<PostSyllabusSM, PostSyllabusDM>().ReverseMap();
+
+
+
+
             }
         }
 
