@@ -1,4 +1,5 @@
-﻿using Intern.Common.Helpers;
+﻿using System.IO;
+using Intern.Common.Helpers;
 using Intern.Data;
 using Intern.DataModels.Exams;
 using Intern.DataModels.User;
@@ -104,6 +105,7 @@ namespace Intern.Services
                 new DepartmentDM { DepartmentName = "Finance and Accounts", Description = "Finance and Accounts Department" },
                 new DepartmentDM { DepartmentName = "Forest and Environment", Description = "Forest and Environment Department" },
                 new DepartmentDM { DepartmentName = "IT", Description = "Information Technology Department" },
+                new DepartmentDM { DepartmentName = "Police", Description = "Police Department" },
             };
 
                 await _context.Departments.AddRangeAsync(departments);
@@ -159,6 +161,7 @@ namespace Intern.Services
                 new PostDM { PostName = "Junior Librarian", Description = "Library staff", CreatedOnUtc = DateTime.UtcNow },
                 new PostDM { PostName = "Studio Assistant", Description = "Education studio support", CreatedOnUtc = DateTime.UtcNow },
                 new PostDM { PostName = "Kitabat Instructor", Description = "Calligraphy instructor", CreatedOnUtc = DateTime.UtcNow },
+                new PostDM { PostName = "Class IV", Description = "Support staff for school maintenance and assistance", CreatedOnUtc = DateTime.UtcNow },
                 
                 // Power Development
                 new PostDM { PostName = "Junior Engineer (Electrical)", Description = "Electrical engineering role", CreatedOnUtc = DateTime.UtcNow },
@@ -171,7 +174,8 @@ namespace Intern.Services
                 new PostDM { PostName = "Social Worker", Description = "Welfare support worker", CreatedOnUtc = DateTime.UtcNow },
                 
                 // Finance
-                new PostDM { PostName = "Accounts Assistant", Description = "Accounts staff", CreatedOnUtc = DateTime.UtcNow },
+                new PostDM { PostName = "Accounts Assistant", Description = "Accounts staff", CreatedOnUtc = DateTime.UtcNow },   
+
                 
                 // Forest
                 new PostDM { PostName = "Forester", Description = "Forest officer", CreatedOnUtc = DateTime.UtcNow },
@@ -185,7 +189,13 @@ namespace Intern.Services
                 new PostDM { PostName = "Research Assistant", Description = "Research support staff", CreatedOnUtc = DateTime.UtcNow },
                 new PostDM { PostName = "Junior Scientific Assistant", Description = "Junior science support", CreatedOnUtc = DateTime.UtcNow },
                 new PostDM { PostName = "Junior Environment Engineer", Description = "Environment engineering support", CreatedOnUtc = DateTime.UtcNow },
-                new PostDM { PostName = "Field Inspector", Description = "Field inspection officer", CreatedOnUtc = DateTime.UtcNow }
+                new PostDM { PostName = "Field Inspector", Description = "Field inspection officer", CreatedOnUtc = DateTime.UtcNow },
+                
+
+                //Police
+                new PostDM { PostName = "Sub Inspector", Description = "Police officer handling law and order duties", CreatedOnUtc = DateTime.UtcNow },
+                new PostDM { PostName = "JKP Constable", Description = "Police constable assisting in field operations", CreatedOnUtc = DateTime.UtcNow }
+                
             };
 
                 await _context.Posts.AddRangeAsync(posts);
@@ -7511,6 +7521,1149 @@ new(){
                 // Assuming _context is your database context
                 await _context.MCQPostSubjects.AddRangeAsync(mcqPostSubjects);
                 await _context.SaveChangesAsync();
+                var basePath = Directory.GetCurrentDirectory();
+
+                #region Papers
+
+                var papers = new[]
+                {
+                     new PapersDM
+                     {
+                        PaperTitle = "Account Assistant Paper 1",
+                        Description = "Paper for Account Assistant- 2021",
+                        FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Account-Assistant-Paper-2021-.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+                       
+
+                     },
+                     new PapersDM
+                     {
+                          PaperTitle = "Account Assistant Paper 2",
+                          Description = "Paper for Account Assistant-2022",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Account-Assistant-Paper-2022.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                        
+
+                     },
+                      new PapersDM
+                     {
+                          PaperTitle = "Class-IV",
+                          Description = "Paper for Class-IV",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Class-4th-Paper.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                      
+
+                     },
+                     new PapersDM
+                     {
+                         PaperTitle = "Computer Assistant",
+                         Description = "Paper for Computer Assistant-2025",
+                         FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/COMPUTER-INSTRUCTOR-OPERATOR-2025.pdf")}",
+                         CreatedOnUtc = DateTime.UtcNow
+                         
+                     },
+                     new PapersDM
+                     {
+                          PaperTitle = "Constable-SET-A-2024",
+                          Description = "Paper for Constable-SET-A-2024",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/CONSTABLE-SET-A-2024.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                      
+
+                     },
+
+                      new PapersDM
+                      {
+                          PaperTitle = "DATA ENTRY OPERATOR-SET-A-2025-Paper 1",
+                          Description = "Paper for Data entry operator-Series-A-2025",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Data entry operator-Series-A-2025.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                      },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "DATA ENTRY OPERATOR-SET-A-2023-Paper 2",
+                          Description = "Paper for Data entry operator-Series-A-2023",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/DATA ENTRY OPERATOR-SET-A-2023.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                        new PapersDM
+                       {
+                          PaperTitle = "Draftsman CIVIL-Set A-2023",
+                          Description = "Paper for DRAFTSMAN CIVIL-Set A-2023",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/DRAFTSMAN CIVIL-Set A-2023.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "Draftsman-Set A-2025",
+                          Description = "Paper for Draftsman-Set A-2025",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Draftsman-Set A-2025.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                        new PapersDM
+                       {
+                          PaperTitle = "FIELD ASSITANT-SET A-2023",
+                          Description = "Paper for FIELD ASSITANT-SET A-2023",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/FIELD ASSITANT-SET A-2023.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "FIELD INSPECTOR-SET A-2023",
+                          Description = "Paper for FIELD INSPECTOR-SET A -2023",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/FIELD INSPECTOR-SET A -2023.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "J.E (CIVIL)-SET A-2023",
+                          Description = "Paper for J.E (CIVIL)-SET A-2023",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/J.E (CIVIL)-SET A-2023.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                       
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JE- MECHANICAL-SET A-2023",
+                          Description = "Paper for JE- MECHANICAL-SET A-2023",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JE- MECHANICAL-SET A-2023.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JE-Civil-102-A-series",
+                          Description = "Paper for JE-Civil-102-A-series",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JE-Civil-102-A-series.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JE-Civil-102-B-Series",
+                          Description = "Paper for JE-Civil-102-B-Series",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JE-Civil-102-B-Series.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JE-Civil-2023",
+                          Description = "Paper for JE-Civil-2023",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JE-Civil-2023.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JE-Civil-C-series",
+                          Description = "Paper for JE-Civil-C-series",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JE-Civil-C-series.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JE-Civil-Series-D",
+                          Description = "Paper for JE-Civil-Series-D",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JE-Civil-Series-D.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                        
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JE-Electrical-B-series",
+                          Description = "Paper for JE-Electrical-B-series",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JE-Electrical-B-series.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JE-Electrical-C-series",
+                          Description = "Paper for JE-Electrical-C-series",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JE-Electrical-C-series.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                        new PapersDM
+                       {
+                          PaperTitle = "JE-Electrical-D-series",
+                          Description = "Paper for JE-Electrical-D-series",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JE-Electrical-D-series.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JE-Electrical-Series A-2025",
+                          Description = "Paper for JE-Electrical-Series A-2025",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JE-Electrical-Series A-2025.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JKP-constable-2024",
+                          Description = "Paper for JKP-constable-2024.pdf",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JKP-constable-2024.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JKP-Sub-Inspector-2022",
+                          Description = "Paper for JKP-Sub-Inspector-2022",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JKP-Sub-Inspector-2022.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "Jr. Scientific Assitant-2025",
+                          Description = "Paper for Jr. Scientific Assitant-2025",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Jr. Scientific Assitant-2025.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JUNIOR ASSISTANT-SET A -2024",
+                          Description = "Paper for JUNIOR ASSISTANT-SET A -2024",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JUNIOR ASSISTANT-SET A -2024.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JUNIOR LABORATORY TECHNICIAN",
+                          Description = "Paper for JUNIOR LABORATORY TECHNICIAN.pdf",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JUNIOR LABORATORY TECHNICIAN.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "Junior Librarian-2025.pdf",
+                          Description = "Paper for Junior Librarian-2025.pdf",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Junior Librarian-2025.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "JUNIOR STAFF NURSE SET-A",
+                          Description = "Paper for JUNIOR STAFF NURSE SET-A.pdf",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/JUNIOR STAFF NURSE SET-A.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "Junior-Assistant-Paper-2023",
+                          Description = "Paper for Junior-Assistant-Paper-2023",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Junior-Assistant-Paper-2023.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "Kitabat Instructor-Series-A-2025",
+                          Description = "Paper for Kitabat Instructor-Series-A-2025",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Kitabat Instructor-Series-A-2025.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "Laboratory Assistant-2025",
+                          Description = "Paper for Laboratory Assistant-2025",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Laboratory Assistant-2025.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "Naib-Tehsildar-2018",
+                          Description = "Paper for Naib-Tehsildar-2018",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Naib-Tehsildar-2018.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                       
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "Naib-Tehsildar-2021",
+                          Description = "Paper for Naib-Tehsildar-2021.pdf",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Naib-Tehsildar-2021.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "Patwari-2018",
+                          Description = "Paper for Patwari-2018.pdf",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Patwari-2018.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                          
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "PATWARI-SET A-2024",
+                          Description = "Paper for PATWARI-SET A-2024",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/PATWARI-SET A-2024.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "PATWARI-URDU-2024",
+                          Description = "Paper for PATWARI-URDU-2024",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/PATWARI-URDU-2024.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                         
+
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "Scientist A-Series-A-2025",
+                          Description = "Paper for Scientist A-Series-A-2025",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Scientist A-Series-A-2025.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                       
+                       },
+                       new PapersDM
+                       {
+                          PaperTitle = "Supervisor-SET-A-2025",
+                          Description = "Paper for Supervisor-SET-A-2025",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Supervisor-SET-A-2025.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+                       },
+
+                       new PapersDM
+                       {
+                          PaperTitle = "Urdu Typist-SET A-2024",
+                          Description = "Paper for Urdu Typist-SET A-2024",
+                          FilePath = $"{Path.Combine(basePath, @"PreviousYearPapers/Urdu Typist-SET A-2024.pdf")}",
+                          CreatedOnUtc = DateTime.UtcNow
+
+                       }
+
+                };
+
+                      await _context.PreviousYearPapers.AddRangeAsync(papers);
+                      await _context.SaveChangesAsync();
+
+                #endregion Papers
+
+
+                #region Syllabus
+
+
+                var syllabus = new[]
+                {
+                     new SyllabusDM
+                     {
+                        Title = "Account_Finance",
+                        Description = "Syllabus for Account_Finance",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Accounts_Finance.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Animal Keeper(HM)",
+                        Description = "Syllabus for Animal Keeper(HM)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Animal Keeper(HM).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Assistant Information Officer(F)",
+                        Description = "Syllabus for Assistant Information Officer(F)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Assistant Information Officer(F).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Assistant Scientific Officier(Chemistry & Toxicology)",
+                        Description = "Syllabus for Assistant Scientific Officier(Chemistry & Toxicology)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Assistant Scientific Officier(Chemistry & Toxicology).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "BCG Technician",
+                        Description = "Syllabus for BCG Technician",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/BCG Technician.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Chemical Assistant(C)",
+                        Description = "Syllabus for Chemical Assistant(C)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Chemical Assistant(C).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Computer Assistant",
+                        Description = "Syllabus for Computer Assistant",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Computer Assistant.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Conseravtion Assistant(C)",
+                        Description = "Syllabus for Conseravtion Assistant(C)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Conseravtion Assistant(C)")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Constable",
+                        Description = "Syllabus for Constable",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Constable.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "CSSD Attendent",
+                        Description = "Syllabus for CSSD Attendent",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/CSSD Attendent.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Draftsman(F)",
+                        Description = "Syllabus for Draftsman(F)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Draftsman(F).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+                     new SyllabusDM
+                     {
+                        Title = "Field Assistant(F)",
+                        Description = "Syllabus for Field Assistant(F)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Field Assistant(F).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Dresser",
+                        Description = "Syllabus for Dresser",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Dresser.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Field Assistant(F)2",
+                        Description = "Syllabus for Field Assistant(F)2",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Field Assistant(F)2.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Field Inspector(F)",
+                        Description = "Syllabus for Field Inspector(F)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Field Inspector(F).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Guard(F)",
+                        Description = "Syllabus for Guard(F)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Guard(F).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Horticulture Technician Grade-IV",
+                        Description = "Syllabus for Horticulture Technician Grade-IV",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Horticulture Technician Grade-IV.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Horticulture",
+                        Description = "Syllabus for Horticulture",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Horticulture.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+
+                     new SyllabusDM
+                     {
+                        Title = "Inspector(F)",
+                        Description = "Syllabus for Inspector(F)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Inspector(F).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Jr Theatre Technician",
+                        Description = "Syllabus for Jr Theatre Technician",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Jr Theatre Technician.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior Assistant(A) Paper 1",
+                        Description = "Syllabus for Junior Assistant(A)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior Assistant(A).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior Assistant Paper 2",
+                        Description = "Syllabus for Junior Assistant",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior Assistant.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior Dental Technician",
+                        Description = "Syllabus for Junior Dental Technician",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior Dental Technician")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior Engineer(Electrical)",
+                        Description = "Syllabus for Junior Engineer(Electrical)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior Engineer(Electrical).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior Environment Engineer(F)",
+                        Description = "Syllabus for Junior Environment Engineer(F)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior Environment Engineer(F)")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior Health Inspector",
+                        Description = "Syllabus for Junior Health Inspector",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior Health Inspector.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior Labortary Technician",
+                        Description = "Syllabus for Junior Labortary Technician",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior Labortary Technician")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior Opthalmic Technician",
+                        Description = "Syllabus for Junior Opthalmic Technician",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior Opthalmic Technician")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior Pharmacist",
+                        Description = "Syllabus for Junior Pharmacist",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior Pharmacist.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior Scientific Assistant(F)",
+                        Description = "Syllabus for Junior Scientific Assistant(F)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior Scientific Assistant(F).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior Store Clerk",
+                        Description = "Syllabus for Junior Store Clerk",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior Store Clerk.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Junior X-ray Technician",
+                        Description = "Syllabus for Junior X-ray Technician",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Junior X-ray Technician.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "junior-Assistant Paper 3",
+                        Description = "Syllabus for junior-Assistant",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/junior-Assistant.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Lab Assistant Environment(F)",
+                        Description = "Syllabus for Lab Assistant Environment(F)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Lab Assistant Environment(F).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Laboratory Assistant(C) Paper 1",
+                        Description = "Syllabus for Laboratory Assistant(C)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Laboratory Assistant(C).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Laboratory Assistant(F) 2 Paper 2",
+                        Description = "Syllabus for Laboratory Assistant(F) 2",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Laboratory Assistant(F) 2.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "MPHW",
+                        Description = "Syllabus for MPHW",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/MPHW.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Naib Tehsildar",
+                        Description = "Syllabus for Lab Naib Tehsildar",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Naib Tehsildar.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Nursing Aid",
+                        Description = "Syllabus for Nursing Aid",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Nursing Aid.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Plumber(HM)",
+                        Description = "Syllabus for Plumber(HM)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Plumber(HM).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Research Assistant(F)",
+                        Description = "Syllabus for Research Assistant(F)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Research Assistant(F).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Scientist-A(F)",
+                        Description = "Syllabus for Scientist-A(F)",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Scientist-A(F).pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Senior Horticulture Technician",
+                        Description = "Syllabus for Senior Horticulture Technician",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Senior Horticulture Technician.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Social Forestry Worker2 Paper 1",
+                        Description = "Syllabus for Social Forestry Worker2",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Social Forestry Worker2.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Social_Forestry_Worker Paper 2",
+                        Description = "Syllabus for Lab Social_Forestry_Worker",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Social_Forestry_Worker.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Staff-Nurse",
+                        Description = "Syllabus for Staff-Nurse",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Staff-Nurse.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Steno Typist",
+                        Description = "Syllabus for Steno Typist",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Steno Typist.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Sub Inspector",
+                        Description = "Syllabus for Sub Inspector",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Sub Inspector.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Supervisor",
+                        Description = "Syllabus for Lab Supervisor",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Supervisor.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Urdu Stenographer",
+                        Description = "Syllabus for Urdu Stenographer",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Urdu Stenographer.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Urdu Typist1",
+                        Description = "Syllabus for Urdu Typist1",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Urdu Typist1.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+
+                     },
+
+                     new SyllabusDM
+                     {
+                        Title = "Wildlife Guard",
+                        Description = "Syllabus for Wildlife Guard",
+                        FilePath = $"{Path.Combine(basePath, @"Syllabus/Wildlife Guard.pdf")}",
+                        CreatedOnUtc = DateTime.UtcNow
+                     }
+               
+
+                };
+
+                await _context.Syllabus.AddRangeAsync(syllabus);
+                await _context.SaveChangesAsync();
+
+                #endregion Syllabus
+
+
+                #region Post Previous Year Papers
+
+                var postPapers = new[]
+                {
+                         // 🔹 Accounts Assistant
+                         new PostPapersDM { PostId = 41, PreviousYearPapersId = 1, ExamYear = new DateTime(2021, 01, 01) },
+                         new PostPapersDM { PostId = 41,PreviousYearPapersId = 2, ExamYear = new DateTime(2022, 01, 01) },
+                                                       
+                         // 🔹 Class IV                
+                         new PostPapersDM { PostId = 36,PreviousYearPapersId = 3, ExamYear = new DateTime(2021, 01, 01) },
+                                                        
+                         // 🔹 Computer Assistant      
+                         new PostPapersDM { PostId = 5, PreviousYearPapersId = 4, ExamYear = new DateTime(2025, 01, 01) },
+                                                        
+                         // 🔹 JKP Constable            
+                         new PostPapersDM { PostId = 55,PreviousYearPapersId = 5, ExamYear = new DateTime(2024, 01, 01) },
+                         new PostPapersDM { PostId = 55,PreviousYearPapersId = 23, ExamYear = new DateTime(2024, 01, 01) },
+                                                       
+                         // 🔹 Data Operator           
+                         new PostPapersDM { PostId = 48,PreviousYearPapersId = 6, ExamYear = new DateTime(2025, 01, 01) },
+                         new PostPapersDM { PostId = 48, PreviousYearPapersId = 7, ExamYear = new DateTime(2023, 01, 01) },
+
+                         // 🔹 Draftsman
+                         new PostPapersDM { PostId = 45, PreviousYearPapersId = 8, ExamYear = new DateTime(2023, 01, 01) },
+                         new PostPapersDM { PostId = 45, PreviousYearPapersId = 9, ExamYear = new DateTime(2025, 01, 01) },
+
+                         // 🔹 Field Assistant
+                         new PostPapersDM { PostId = 27, PreviousYearPapersId = 10, ExamYear = new DateTime(2023, 01, 01) },
+
+                         // 🔹 Field Inspector
+                         new PostPapersDM { PostId = 53, PreviousYearPapersId = 11, ExamYear = new DateTime(2023, 01, 01) },
+
+                         // 🔹 Junior Engineer (Civil)
+                         new PostPapersDM { PostId = 38, PreviousYearPapersId = 12, ExamYear = new DateTime(2023, 01, 01) },
+                         new PostPapersDM { PostId = 38, PreviousYearPapersId = 14, ExamYear = new DateTime(2023, 01, 01) },
+                         new PostPapersDM { PostId = 38, PreviousYearPapersId = 15, ExamYear = new DateTime(2023, 01, 01) },
+                         new PostPapersDM { PostId = 38, PreviousYearPapersId = 16, ExamYear = new DateTime(2023, 01, 01) },
+                         new PostPapersDM { PostId = 38, PreviousYearPapersId = 17, ExamYear = new DateTime(2023, 01, 01) },
+                         new PostPapersDM { PostId = 38, PreviousYearPapersId = 18, ExamYear = new DateTime(2023, 01, 01) },
+
+                         // 🔹 Junior Engineer (Electrical)
+                         new PostPapersDM { PostId = 37, PreviousYearPapersId = 19, ExamYear = new DateTime(2023, 01, 01) },
+                         new PostPapersDM { PostId = 37, PreviousYearPapersId = 20, ExamYear = new DateTime(2023, 01, 01) },
+                         new PostPapersDM { PostId = 37, PreviousYearPapersId = 21, ExamYear = new DateTime(2023, 01, 01) },
+                         new PostPapersDM { PostId = 37, PreviousYearPapersId = 22, ExamYear = new DateTime(2025, 01, 01) },
+
+                         // 🔹 Sub Inspector
+                         new PostPapersDM { PostId = 54, PreviousYearPapersId = 24, ExamYear = new DateTime(2022, 01, 01) },
+
+                         // 🔹 Junior Scientific Assistant
+                         new PostPapersDM { PostId = 51, PreviousYearPapersId = 25, ExamYear = new DateTime(2025, 01, 01) },
+
+                         // 🔹 Junior Assistant
+                         new PostPapersDM { PostId = 1, PreviousYearPapersId = 26, ExamYear = new DateTime(2024, 01, 01) },
+                         new PostPapersDM { PostId = 1, PreviousYearPapersId = 30, ExamYear = new DateTime(2023, 01, 01) },
+
+                         // 🔹 Junior Lab Technician
+                         new PostPapersDM { PostId = 12, PreviousYearPapersId = 27, ExamYear = new DateTime(2024, 01, 01) },
+
+                         // 🔹 Junior Librarian
+                         new PostPapersDM { PostId = 33, PreviousYearPapersId = 28, ExamYear = new DateTime(2025, 01, 01) },
+
+                         // 🔹 Staff Nurse
+                         new PostPapersDM { PostId = 3, PreviousYearPapersId = 29, ExamYear = new DateTime(2024, 01, 01) },
+
+                         // 🔹 Kitabat Instructor
+                         new PostPapersDM { PostId = 35, PreviousYearPapersId = 31, ExamYear = new DateTime(2025, 01, 01) },
+
+                         // 🔹 Lab Assistant
+                         new PostPapersDM { PostId = 47, PreviousYearPapersId = 32, ExamYear = new DateTime(2025, 01, 01) },
+
+                         // 🔹 Naib Tehsildar
+                         new PostPapersDM { PostId = 6, PreviousYearPapersId = 33, ExamYear = new DateTime(2018, 01, 01) },
+                         new PostPapersDM { PostId = 6, PreviousYearPapersId = 34, ExamYear = new DateTime(2021, 01, 01) },
+
+                         // 🔹 Patwari
+                         new PostPapersDM { PostId = 2, PreviousYearPapersId = 35, ExamYear = new DateTime(2018, 01, 01) },
+                         new PostPapersDM { PostId = 2, PreviousYearPapersId = 36, ExamYear = new DateTime(2024, 01, 01) },
+                         new PostPapersDM { PostId = 2, PreviousYearPapersId = 37, ExamYear = new DateTime(2024, 01, 01) },
+
+                         // 🔹 Scientist A
+                         new PostPapersDM { PostId = 49, PreviousYearPapersId = 38, ExamYear = new DateTime(2025, 01, 01) },
+
+                         // 🔹 SI (Finance)
+                        // new PostPapersDM { PostId = 54, PreviousYearPapersId = 39, ExamYear = new DateTime(2022, 01, 01) },
+
+                         // 🔹 Supervisor
+                         new PostPapersDM { PostId = 39, PreviousYearPapersId = 39, ExamYear = new DateTime(2025, 01, 01) },
+
+                         // 🔹 Urdu Typist
+                         new PostPapersDM { PostId = 24, PreviousYearPapersId = 40, ExamYear = new DateTime(2024, 01, 01) }
+                };
+
+                await _context.PostPreviousYearPapers.AddRangeAsync(postPapers);
+                await _context.SaveChangesAsync();
+
+                #endregion Post Previous Year Papers
+
+
+                #region Post Syllabus
+
+                var postSyllabus = new[]
+                {
+                      // 🔹 1. Account_Finance → Accounts Assistant
+                      new PostSyllabusDM { PostId = 41, SyllabusId = 1, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 2. Animal Keeper(HM) → Class IV
+                      new PostSyllabusDM { PostId = 36, SyllabusId = 2, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 3. Assistant Information Officer(F) → Assistant Information Officer
+                      new PostSyllabusDM { PostId = 46, SyllabusId = 3, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 4. Assistant Scientific Officer(Chemistry & Toxicology) → Assistant Scientific Officer
+                      new PostSyllabusDM { PostId = 19, SyllabusId = 4, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 5. BCG Technician → BCG Technician
+                      new PostSyllabusDM { PostId = 16, SyllabusId = 5, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 6. Chemical Assistant(C) → Lab Assistant
+                      new PostSyllabusDM { PostId = 47, SyllabusId = 6, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 7. Computer Assistant → Computer Assistant
+                      new PostSyllabusDM { PostId = 5, SyllabusId = 7, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 8. Conservation Assistant(C) → Soil Conservation Assistant
+                      new PostSyllabusDM { PostId = 32, SyllabusId = 8, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 9. Constable → JKP Constable
+                      new PostSyllabusDM { PostId = 55, SyllabusId = 9, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 10. CSSD Attendant → CSSD Attendant
+                      new PostSyllabusDM { PostId = 18, SyllabusId = 10, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 11. Draftsman(F) → Draftsman
+                      new PostSyllabusDM { PostId = 45, SyllabusId = 11, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 12. Field Assistant(F) → Field Assistant
+                      new PostSyllabusDM { PostId = 27, SyllabusId = 12, YearOfExam = new DateTime(2024, 01, 01) },
+                      new PostSyllabusDM { PostId = 27, SyllabusId = 14, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 13. Dresser → Dresser
+                      new PostSyllabusDM { PostId = 17, SyllabusId = 13, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 15. Field Inspector(F) → Field Inspector
+                      new PostSyllabusDM { PostId = 53, SyllabusId = 15, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 16. Guard(F) → Forest Guard
+                      new PostSyllabusDM { PostId = 44, SyllabusId = 16, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 17. Horticulture Technician Grade-IV → Horticulture Assistant
+                      new PostSyllabusDM { PostId = 28, SyllabusId = 17, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 18. Horticulture → Horticulture Assistant
+                      new PostSyllabusDM { PostId = 28, SyllabusId = 18, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 19. Inspector(F) → Sub Inspector
+                      new PostSyllabusDM { PostId = 54, SyllabusId = 19, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 20. Jr Theatre Technician → Class IV
+                      new PostSyllabusDM { PostId = 36, SyllabusId = 20, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 21–22–33. Junior Assistant (3 papers)
+                      new PostSyllabusDM { PostId = 1, SyllabusId = 21, YearOfExam = new DateTime(2024, 01, 01) },
+                      new PostSyllabusDM { PostId = 1, SyllabusId = 22, YearOfExam = new DateTime(2024, 01, 01) },
+                      new PostSyllabusDM { PostId = 1, SyllabusId = 33, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 23. Junior Dental Technician → Junior Dental Technician
+                      new PostSyllabusDM { PostId = 14, SyllabusId = 23, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 24. Junior Engineer(Electrical) → Junior Engineer (Electrical)
+                      new PostSyllabusDM { PostId = 37, SyllabusId = 24, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 25. Junior Environment Engineer(F) → Junior Environment Engineer
+                      new PostSyllabusDM { PostId = 52, SyllabusId = 25, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 26. Junior Health Inspector → Junior Health Inspector
+                      new PostSyllabusDM { PostId = 13, SyllabusId = 26, YearOfExam = new DateTime(2024, 01, 01) },
+
+                      // 🔹 27. Junior Laboratory Technician → Lab Technician
+                      new PostSyllabusDM { PostId = 8, SyllabusId = 27, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 28. Junior Ophthalmic Technician → Health Department (add to Junior Lab Technician)
+                      new PostSyllabusDM { PostId = 12, SyllabusId = 28, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 29. Junior Pharmacist → Junior Pharmacist
+                      new PostSyllabusDM { PostId = 7, SyllabusId = 29, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 30. Junior Scientific Assistant(F) → Junior Scientific Assistant
+                      new PostSyllabusDM { PostId = 51, SyllabusId = 30, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 31. Junior Store Clerk → Junior Store Clerk
+                      new PostSyllabusDM { PostId = 15, SyllabusId = 31, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 32. Junior X-ray Technician → Class IV (Hospital Support)
+                      new PostSyllabusDM { PostId = 36, SyllabusId = 32, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 34. Lab Assistant Environment(F) → Lab Assistant
+                      new PostSyllabusDM { PostId = 47, SyllabusId = 34, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 35–36. Laboratory Assistant → Lab Assistant
+                      new PostSyllabusDM { PostId = 47, SyllabusId = 35, YearOfExam = new DateTime(2024, 01, 01) },
+                      new PostSyllabusDM { PostId = 47, SyllabusId = 36, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 37. MPHW → MPHW
+                      new PostSyllabusDM { PostId = 9, SyllabusId = 37, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 38. Naib Tehsildar → Naib Tehsildar
+                      new PostSyllabusDM { PostId = 6, SyllabusId = 38, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 39. Nursing Aid → Nursing Aid
+                      new PostSyllabusDM { PostId = 10, SyllabusId = 39, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 40. Plumber(HM) → Class IV
+                      new PostSyllabusDM { PostId = 36, SyllabusId = 40, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 41. Research Assistant(F) → Research Assistant
+                      new PostSyllabusDM { PostId = 50, SyllabusId = 41, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 42. Scientist-A(F) → Scientist A
+                      new PostSyllabusDM { PostId = 49, SyllabusId = 42, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 43. Senior Horticulture Technician → Horticulture Assistant
+                      new PostSyllabusDM { PostId = 28, SyllabusId = 43, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 44–45. Social Forestry Worker → Forest Department
+                      new PostSyllabusDM { PostId = 44, SyllabusId = 44, YearOfExam = new DateTime(2024, 01, 01) },
+                      new PostSyllabusDM { PostId = 44, SyllabusId = 45, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 46. Staff-Nurse → Staff Nurse
+                      new PostSyllabusDM { PostId = 3, SyllabusId = 46, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 47. Steno Typist → Junior Assistant (Clerical)
+                      new PostSyllabusDM { PostId = 1, SyllabusId = 47, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 48. Sub Inspector → Sub Inspector
+                      new PostSyllabusDM { PostId = 54, SyllabusId = 48, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 49. Supervisor → Supervisor
+                      new PostSyllabusDM { PostId = 39, SyllabusId = 49, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 50. Urdu Stenographer → Urdu Typist
+                      new PostSyllabusDM { PostId = 24, SyllabusId = 50, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 51. Urdu Typist1 → Urdu Typist
+                      new PostSyllabusDM { PostId = 24, SyllabusId = 51, YearOfExam = new DateTime(2024, 01, 01) },
+                      
+                      // 🔹 52. Wildlife Guard → Wildlife Guard
+                      new PostSyllabusDM { PostId = 43, SyllabusId = 52, YearOfExam = new DateTime(2024, 01, 01) }
+                };
+
+                await _context.PostSyllabus.AddRangeAsync(postSyllabus);
+                await _context.SaveChangesAsync();
+
+                #endregion Post Syllabus
+
+
+
 
                 return "Database seeded successfully!";
             }
