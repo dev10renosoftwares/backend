@@ -84,9 +84,6 @@ namespace Intern.Services
             return true;
         }
 
-
-
-
         public async Task<bool> DeleteAsync(int id)
         {
             if (id <= 0)
@@ -187,30 +184,50 @@ namespace Intern.Services
             if (existing == null)
                 throw new AppException("DepartmentId Not Found", HttpStatusCode.NotFound);
 
-            
+
+            //var postsWithDate = await (from dp in _context.DepartmentPosts
+            //                           join p in _context.Posts on dp.PostId equals p.Id
+            //                           where dp.DepartmentId == depId
+            //                           select new PostSM
+            //                           {
+            //                               Id = p.Id,
+            //                               PostName = p.PostName,
+            //                               Description = p.Description,
+            //                               PostDate = dp.PostDate,
+            //                               NotificationNumber = dp.NotificationNumber
+            //                           })
+            //                           .OrderByDescending(p => p.PostDate)
+            //                           .Skip(skip)
+            //                           .Take(top)
+            //                           .ToListAsync();
+            //return postsWithDate;
+
+
+            //2️⃣ Fetch posts first
             var postsWithDate = await (from dp in _context.DepartmentPosts
                                        join p in _context.Posts on dp.PostId equals p.Id
                                        where dp.DepartmentId == depId
                                        select new PostSM
                                        {
                                            Id = p.Id,
-                                           PostName = p.PostName,          
-                                           Description = p.Description,    
-                                           PostDate = dp.PostDate,      
+                                           PostName = p.PostName,
+                                           Description = p.Description,
+                                           PostDate = dp.PostDate,
                                            NotificationNumber = dp.NotificationNumber
                                        })
-                                       .OrderByDescending(p => p.PostDate)
-                                       .Skip(skip)
-                                       .Take(top)
-                                       .ToListAsync();
+                                      .OrderByDescending(p => p.PostDate)
+                                      .ToListAsync();
 
-            return postsWithDate;
+            // 3️⃣ Then apply DistinctBy on the in-memory list
+            var distinctPosts = postsWithDate
+                .DistinctBy(p => p.Id) 
+                .Skip(skip)
+                .Take(top)
+                .ToList();
+
+            return distinctPosts;
+
+
         }
-
-
-
-
-
-
     }
 }

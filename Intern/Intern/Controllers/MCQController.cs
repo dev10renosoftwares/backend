@@ -110,7 +110,7 @@ namespace Intern.Controllers
         [Authorize(Roles = "ClientEmployee")]
         [HttpPost("results")]
         public async Task<ApiResponse<UserTestDetailsSM>> GetTestResults([FromBody] MockTestQuestionsSM answers)
-        {
+        {  
             var userId = _tokenHelper.GetUserIdFromToken();
             if(userId <= 0)
             {

@@ -199,7 +199,7 @@ namespace Intern.Services
 
                 // 4. Mark as verified
                 user.IsEmailConfirmed = true;
-                _Context.ClientUsers.Update(user);
+                _Context.ClientUsers.Update(user);  
                 await _Context.SaveChangesAsync();
 
                
@@ -278,62 +278,7 @@ namespace Intern.Services
 
             return "Verification email resent. Please check your inbox.";
         }
-
-
-
-        /*public async Task<LoginResponseSM> LoginAsync(LoginSM loginSM)
-        {
-            // 1. Validate role
-            if (!Enum.IsDefined(typeof(UserRoleSM), loginSM.Role))
-                throw new AppException("Invalid role specified", HttpStatusCode.BadRequest);
-
-            object user = loginSM.Role switch
-            {
-                UserRoleSM.SuperAdmin or UserRoleSM.SystemAdmin =>
-                    await _Context.ApplicationUsers.FirstOrDefaultAsync(u => u.Email == loginSM.Email),
-
-                UserRoleSM.ClientEmployee =>
-                    await _Context.ClientUsers.FirstOrDefaultAsync(u => u.Email == loginSM.Email),
-
-                _ => throw new AppException("Unsupported role for login", HttpStatusCode.BadRequest)
-            };
-
-            if (user == null)
-                throw new AppException("User not found. Invalid Email", HttpStatusCode.NotFound);
-
-            if (user is ClientUserDM clientUser && !clientUser.IsEmailConfirmed)
-                throw new AppException("Please verify your email before logging in.", HttpStatusCode.Forbidden);
-
-            
-            // 2. Map to UserSM for password + image handling
-            var userSM = _mapper.Map<UserSM>(user);
-            
-            // Password checks
-            if (string.IsNullOrEmpty(user.))
-                throw new AppException("This account is registered via Google. Please log in using Google login.", HttpStatusCode.BadRequest);
-
-            var isValidPassword = _passwordHelper.VerifyPassword(loginSM.Password, userSM.Password);
-            if (!isValidPassword)
-                throw new AppException("Incorrect Password", HttpStatusCode.Unauthorized);
-
-            // 3. Handle image BEFORE mapping to response
-            if (!string.IsNullOrEmpty(userSM.ImageBase64) && File.Exists(userSM.ImageBase64))
-                userSM.ImageBase64 = _imageHelper.ConvertFileToBase64(userSM.ImageBase64);
-            else
-                userSM.ImageBase64 = null;
-
-            // 4. Generate JWT
-            userSM.Role = loginSM.Role; 
-            var token = JWTToken.GenerateJWTToken(_configuration, userSM);
-
-            // 5. Map to LoginResponseSM
-            var responseSM = _mapper.Map<LoginResponseSM>(userSM);
-            responseSM.Token = new JwtSecurityTokenHandler().WriteToken(token);
-            responseSM.Expiration = token.ValidTo;
-
-            return responseSM;
-        }*/
-
+          
         public async Task<LoginResponseSM> LoginAsync(LoginSM loginSM)
         {
             if (loginSM == null) throw new ArgumentNullException(nameof(loginSM));

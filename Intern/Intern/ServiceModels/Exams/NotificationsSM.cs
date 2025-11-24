@@ -10,6 +10,7 @@ namespace Intern.ServiceModels.Exams
     {
         public string Title { get; set; }
         public string Message { get; set; }
+
         public NotificationTypeSM NotificationType { get; set; }
 
         public int DepartmentId { get; set; }

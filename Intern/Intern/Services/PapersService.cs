@@ -16,15 +16,15 @@ namespace Intern.Services
         private readonly IMapper _mapper;
         private readonly ImageHelper _imageHelper;
         private readonly TokenHelper _tokenHelper;
-        private readonly GoogleDriveService _googleDriveService;
+       
 
-        public PapersService(ApiDbContext context,IMapper mapper,ImageHelper imageHelper,TokenHelper tokenHelper,GoogleDriveService googleDriveService)
+        public PapersService(ApiDbContext context,IMapper mapper,ImageHelper imageHelper,TokenHelper tokenHelper)
         {
             _context = context;
             _mapper = mapper;
             _imageHelper = imageHelper;
             _tokenHelper = tokenHelper;
-            _googleDriveService = googleDriveService;
+            
         }
 
         public async Task<List<PapersSM>> GetPapersByPostIdAsync(int postId)
@@ -53,8 +53,7 @@ namespace Intern.Services
 
             return papersList;
         }
-
-
+  
         public async Task<IEnumerable<PapersSM>> GetAllAsync()
         {
             var papers = await _context.PreviousYearPapers

@@ -103,7 +103,6 @@ namespace Intern.Controllers
             return ApiResponse<DepartmentPostsResponseSM>.SuccessResponse(response, "Posts fetched successfully");
         }
 
-
         [Authorize(Roles = "ClientEmployee,SuperAdmin,SystemAdmin")]
         [HttpGet("dashboard/{departmentId}")]
         public async Task<ApiResponse<DashboardSM>> GetDashboardDetails(int departmentId)
@@ -117,6 +116,32 @@ namespace Intern.Controllers
                 return ApiResponse<DashboardSM>.ErrorResponse("Dashboard data not found");
 
             return ApiResponse<DashboardSM>.SuccessResponse(result, "Dashboard fetched successfully");
+        }
+
+        [Authorize(Roles = "ClientEmployee")]
+        [HttpGet("top-recommended/{departmentId}")]
+        public async Task<ApiResponse<List<PostSM>>> GetTopRecommendedExamsAsync(int departmentId, int skip, int top)
+        {
+
+            var result = await _dashService.GetTopRecommendedExamsAsync(departmentId, skip, top);
+
+            if (result == null)
+                return ApiResponse<List<PostSM>>.ErrorResponse("Dashboard data not found");
+
+            return ApiResponse<List<PostSM>>.SuccessResponse(result, "Dashboard fetched successfully");
+        }
+
+        [Authorize(Roles = "ClientEmployee")]
+        [HttpGet("top-upcomingexams/{departmentId}")]
+        public async Task<ApiResponse<List<PostSM>>> GetTopUpcomingExamsAsync(int departmentId, int skip, int top)
+        {
+
+            var result = await _dashService.GetTopUpcomingExamsAsync(departmentId, skip, top);
+
+            if (result == null)
+                return ApiResponse<List<PostSM>>.ErrorResponse("Dashboard data not found");
+
+            return ApiResponse<List<PostSM>>.SuccessResponse(result, "Dashboard fetched successfully");
         }
 
 
