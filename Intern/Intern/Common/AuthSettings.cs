@@ -11,5 +11,8 @@
         public int MaxTestsPerUser { get; set; }
 
         public double NegativeMarkPerQuestion { get; set; }
+        public double MarksPerQuestion { get; set; }
+        public int TotalQuestionsPerMockTest { get; set; }
+        public int TotalTimePerMockTest { get; set; }
     }
 }

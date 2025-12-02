@@ -578,6 +578,82 @@ namespace Intern.Services
             }
         }
 
+        public async Task<McqTestConfigSM> GetCountOfMcqsByDepartmentAndPostId(int userId, int departmentId, int postId)
+        {
+            try
+            {
+                // ✅ 1. Check user test limit
+                int userTestCount = await _context.UserTestDetails
+                    .CountAsync(t => t.UserId == userId);
+
+                if (userTestCount >= _examConfig.MaxTestsPerUser)
+                {
+                    throw new AppException($"You cannot attempt more than {_examConfig.MaxTestsPerUser} tests.",HttpStatusCode.Forbidden);
+                }
+
+                string loginId = _tokenHelper.GetLoginIdFromToken();
+
+                // ✅ 2. Validate Department & Post
+                var existingDept = await _deptService.GetByIdAsync(departmentId);
+                var existingPost = await _postSevice.GetByIdAsync(postId);
+
+                if (existingDept == null || existingPost == null)
+                {
+                    throw new AppException("Department or post not found.",
+                        HttpStatusCode.NotFound);
+                }
+
+                // ✅ 3. Confirm post belongs to department
+                bool isValidPost = await _context.DepartmentPosts
+                    .AnyAsync(dp => dp.DepartmentId == departmentId && dp.PostId == postId);
+
+                if (!isValidPost)
+                {
+                    throw new AppException(
+                        "The specified post does not belong to this department.",
+                        HttpStatusCode.Conflict);
+                }
+
+                // ✅ 4. Count total MCQs for the post
+                int count = await _context.MCQPostSubjects
+                    .Where(x => x.PostId == postId)
+                    .CountAsync();
+
+                if (count == 0)
+                {
+                    throw new AppException("No MCQs are configured for this post.",
+                        HttpStatusCode.BadRequest);
+                }
+
+                var mcqs = await _context.MCQPostSubjects
+                    .Where(x => x.PostId == postId)           
+                    .ToListAsync();
+            
+                int totalMcqToShow = _examConfig.TotalQuestionsPerMockTest; 
+
+                // Your exact original logic
+                if (totalMcqToShow > count)
+                {
+                    totalMcqToShow = count;
+                }
+
+                // ✅ 7. Build SM (No CountOfMcqs)
+                var result = new McqTestConfigSM
+                {
+                    NegativeMarkPerQuestion = _examConfig.NegativeMarkPerQuestion,
+                    MarksPerQuestion = _examConfig.MarksPerQuestion,
+                    TotalQuestionsPerMockTest = totalMcqToShow,
+                    TotalTimePerMockTest = _examConfig.TotalTimePerMockTest
+                };
+
+                return result;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
 
 
 

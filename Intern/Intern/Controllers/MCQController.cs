@@ -105,6 +105,16 @@ namespace Intern.Controllers
             int userId = _tokenHelper.GetUserIdFromToken();
             var result = await _mCQService.GetSectionalMcqsByDepartmentAndPostId(userId, departmentId, postId);
             return ApiResponse<MockTestQuestionsResponseSM>.SuccessResponse(result, "MCQs fetched successfully");
+
+
+        }
+        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]  
+        [HttpGet("get-mcqs-count")]
+        public async Task<ApiResponse<McqTestConfigSM>> GetCountOfMcqsByDepartmentAndPostId(int postId, int departmentId)
+        {
+            int userId = _tokenHelper.GetUserIdFromToken();
+            var result = await _mCQService.GetCountOfMcqsByDepartmentAndPostId(userId, departmentId,postId);
+            return ApiResponse<McqTestConfigSM>.SuccessResponse(result, "MCQ test configuration fetched successfully");
         }
 
         [Authorize(Roles = "ClientEmployee")]
