@@ -19,7 +19,8 @@ namespace Intern.Controllers
         {
             _subjectService = subjectService;
         }
-        [Authorize(Roles = "SuperAdmin,SystemAdmin")]
+
+        [Authorize(Roles = "SuperAdmin,SystemAdmin,ClientEmployee")]
         [HttpGet]
         public async Task<ApiResponse<IEnumerable<SubjectSM>>> GetAll()
         {
